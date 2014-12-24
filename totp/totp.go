@@ -18,9 +18,77 @@
 package totp
 
 import (
-	"errors"
 	"github.com/pquerna/otp"
+
+	"crypto/rand"
+	"encoding/base32"
+	"errors"
+	"net/url"
+	"strconv"
 )
+
+// Options for .Generate()
+type GenerateOpts struct {
+	// Name of the issuing Organization/Company.
+	Issuer string
+	// Name of the User's Account (eg, email address)
+	AccountName string
+	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
+	Period uint
+	// Size in size of the generated Secret. Defaults to 10 bytes.
+	SecretSize uint
+	// Digits to request. Defaults to 6.
+	Digits Digits
+	// Algorithm to use for HMAC. Defaults to SHA1.
+	Algorithm Algorithm
+}
+
+var GenerateMissingIssuer = errors.New("Issuer must be set")
+var GenerateMissingAccountName = errors.New("AccountName must be set")
+
+// Generates a new TOTP Key.
+func Generate(opts *GenerateOpts) (*otp.Key, error) {
+	// url encode the Issuer/AccountName
+	if opts.Issuer == "" {
+		return nil, GenerateMissingIssuer
+	}
+
+	if opts.AccountName == "" {
+		return nil, GenerateMissingAccountName
+	}
+
+	if opts.Period == 0 {
+		opts.Period = 30
+	}
+
+	if opts.SecretSize == 0 {
+		opts.SecretSize = 10
+	}
+
+	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
+
+	v := url.Values{}
+	secret := make([]byte, opts.SecretSize)
+	_, err := rand.Read(secret)
+	if err != nil {
+		return nil, err
+	}
+
+	v.Set("secret", base32.StdEncoding.EncodeToString(secret))
+	v.Set("issuer", opts.Issuer)
+	v.Set("period", strconv.FormatUint(uint64(opts.Period), 10))
+	v.Set("algorithm", opts.Algorithm.String())
+	v.Set("digits", opts.Digits.String())
+
+	u := url.URL{
+		Scheme:   "otpauth",
+		Host:     "totp",
+		Path:     "/" + opts.Issuer + ":" + opts.AccountName,
+		RawQuery: v.Encode(),
+	}
+
+	return otp.NewKeyFromURL(u.String())
+}
 
 type Algorithm int
 
@@ -31,15 +99,33 @@ const (
 	AlgorithmMD5
 )
 
-type GenerateOptions struct {
-	Issuer      string
-	AccountName string
-	Algorithm   Algorithm
+func (a Algorithm) String() string {
+	switch a {
+	case AlgorithmSHA1:
+		return "SHA1"
+	case AlgorithmSHA256:
+		return "SHA256"
+	case AlgorithmSHA512:
+		return "SHA512"
+	case AlgorithmMD5:
+		return "MD5"
+	}
+	panic("unreached")
 }
 
-func Generate(opts *GenerateOptions) (*otp.Key, error) {
-	// url encode the Issuer/AccountName
+type Digits int
 
-	// otp.NewKeyFromURL()
-	return nil, errors.New("dead")
+const (
+	DigitsSix Digits = iota
+	DigitsEight
+)
+
+func (d Digits) String() string {
+	switch d {
+	case DigitsSix:
+		return "6"
+	case DigitsEight:
+		return "8"
+	}
+	panic("unreached")
 }
