@@ -88,7 +88,14 @@ func (k *Key) Issuer() string {
 }
 
 func (k *Key) AccountName() string {
-	return ""
+	p := strings.TrimPrefix(k.url.Path, "/")
+	i := strings.Index(p, ":")
+
+	if i == -1 {
+		return p
+	}
+
+	return p[i+1:]
 }
 
 func (k *Key) Secret() string {
