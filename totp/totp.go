@@ -38,6 +38,8 @@ import (
 	"time"
 )
 
+const debug = false
+
 // Validates that input is a valid TOTP given
 // the current time. A shortcut for ValidateCustom.
 func Validate(input string, secret string) bool {
@@ -94,7 +96,8 @@ func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts)
 	}
 
 	counters := []uint64{}
-	counter := int64(math.Floor(float64(t.Second()) / float64(opts.Period)))
+	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
+
 	counters = append(counters, uint64(counter))
 	for i := 1; i <= int(opts.Skew); i++ {
 		counters = append(counters, uint64(counter+int64(i)))
@@ -106,6 +109,11 @@ func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts)
 		buf := make([]byte, 8)
 		mac := hmac.New(opts.Algorithm.Hash, secretBytes)
 		binary.BigEndian.PutUint64(buf, counter)
+		if debug {
+			fmt.Printf("counter=%v\n", counter)
+			fmt.Printf("buf=%v\n", buf)
+		}
+
 		mac.Write(buf)
 		sum := mac.Sum(nil)
 
@@ -119,6 +127,12 @@ func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts)
 
 		l := opts.Digits.Legnth()
 		mod := int32(value % int64(math.Pow10(l)))
+
+		if debug {
+			fmt.Printf("offset=%v\n", offset)
+			fmt.Printf("value=%v\n", value)
+			fmt.Printf("mod'ed=%v\n", mod)
+		}
 
 		otpstr := opts.Digits.Format(mod)
 		if otpstr == input {
