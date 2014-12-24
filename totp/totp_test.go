@@ -79,6 +79,29 @@ func TestValidateRFCMatrix(t *testing.T) {
 	}
 }
 
+func TestValidateSkew(t *testing.T) {
+	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+
+	tests := []tc{
+		tc{29, "94287082", AlgorithmSHA1, secSha1},
+		tc{59, "94287082", AlgorithmSHA1, secSha1},
+		tc{61, "94287082", AlgorithmSHA1, secSha1},
+	}
+
+	for _, tx := range tests {
+		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
+			ValidateOpts{
+				Digits:    DigitsEight,
+				Algorithm: tx.Mode,
+				Skew:      1,
+			})
+		require.NoError(t, err,
+			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+		require.True(t, valid,
+			"unexpected totp failure totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+	}
+}
+
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
