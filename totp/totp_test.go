@@ -30,6 +30,7 @@ func TestGenerate(t *testing.T) {
 	})
 	require.NoError(t, err, "generate basic TOTP")
 	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
+	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
 
 	k, err = Generate(&GenerateOpts{
 		Issuer:      "SnakeOil",
