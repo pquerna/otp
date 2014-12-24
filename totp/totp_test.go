@@ -18,13 +18,36 @@
 package totp
 
 import (
+	"encoding/base32"
 	"github.com/stretchr/testify/require"
 
 	"testing"
+	"time"
 )
 
+// TODO: http://tools.ietf.org/html/rfc6238#appendix-B
+
+func TestValidateRFCMatrix(t *testing.T) {
+	secret := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+	valid, err := ValidateCustom("94287082", secret, time.Unix(59, 0).UTC(),
+		ValidateOpts{
+			Period: 30,
+			Digits: DigitsEight,
+		})
+	require.NoError(t, err, "test matrix is expected to succeed")
+	require.True(t, valid, "test matrix is expected to succeed")
+
+	valid, err = ValidateCustom("07081804", secret, time.Unix(1111111109, 0).UTC(),
+		ValidateOpts{
+			Period: 30,
+			Digits: DigitsEight,
+		})
+	require.NoError(t, err, "test matrix is expected to succeed")
+	require.True(t, valid, "test matrix is expected to succeed")
+}
+
 func TestGenerate(t *testing.T) {
-	k, err := Generate(&GenerateOpts{
+	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 	})
@@ -33,7 +56,7 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
 
-	k, err = Generate(&GenerateOpts{
+	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 		SecretSize:  20,
