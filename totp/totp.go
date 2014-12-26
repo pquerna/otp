@@ -29,15 +29,17 @@ import (
 	"time"
 )
 
-// Validates that input is a valid TOTP given
-// the current time. A shortcut for ValidateCustom.
-func Validate(input string, secret string) bool {
+// Validate a TOTP using the current time.
+// A shortcut for ValidateCustom, Validate uses a configuration
+// that is compatible with Google-Authenticator and most clients.
+func Validate(passcode string, secret string) bool {
 	rv, _ := ValidateCustom(
-		input,
+		passcode,
 		secret,
 		time.Now().UTC(),
 		ValidateOpts{
 			Period:    30,
+			Skew:      1,
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
 		},
@@ -45,11 +47,13 @@ func Validate(input string, secret string) bool {
 	return rv
 }
 
+// ValidateOpts provides options for ValidateCustom().
 type ValidateOpts struct {
 	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
 	Period uint
-	// Periods before or affter the current time to allow.  Value of 1 allows up to Period
-	// of either side of the specified time.  Defaults to 0 allowed skews.
+	// Periods before or after the current time to allow.  Value of 1 allows up to Period
+	// of either side of the specified time.  Defaults to 0 allowed skews.  Values greater
+	// than 1 are likely sketchy.
 	Skew uint
 	// Digits as part of the input. Defaults to 6.
 	Digits otp.Digits
@@ -57,7 +61,9 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
+// ValidateCustom validates a TOTP given a user specified time and custom options.
+// Most users should use Validate() to provide an interpolatable TOTP experience.
+func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
 	if opts.Period == 0 {
 		opts.Period = 30
 	}
@@ -72,7 +78,7 @@ func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts)
 	}
 
 	for _, counter := range counters {
-		rv, err := hotp.ValidateCustom(input, counter, secret, hotp.ValidateOpts{
+		rv, err := hotp.ValidateCustom(passcode, counter, secret, hotp.ValidateOpts{
 			Digits:    opts.Digits,
 			Algorithm: opts.Algorithm,
 		})
@@ -89,7 +95,8 @@ func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts)
 	return false, nil
 }
 
-// Options for .Generate()
+// GenerateOpts provides options for Generate().  The default values
+// are compatible with Google-Authenticator.
 type GenerateOpts struct {
 	// Name of the issuing Organization/Company.
 	Issuer string
@@ -105,7 +112,7 @@ type GenerateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-// Generates a new TOTP Key.
+// Generate a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {

@@ -4,8 +4,6 @@
 
 [![GoDoc](https://godoc.org/github.com/pquerna/otp?status.svg)](https://godoc.org/github.com/pquerna/otp)
 
-# STATUS: IN DEVELOPMENT
-
 Supports:
 
 * HMAC-based One-time Password Algorithm (HOTP) (RFC 4226): Counter based OTP.

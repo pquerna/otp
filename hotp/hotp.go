@@ -33,11 +33,12 @@ import (
 
 const debug = false
 
-// Validates that input is a valid HOTP given
-// the secret and a counter. A shortcut for ValidateCustom.
-func Validate(input string, counter uint64, secret string) bool {
+// Validate a HOTP passcode given a counter and secret.
+// This is a shortcut for ValidateCustom, with parameters that
+// are compataible with Google-Authenticator.
+func Validate(passcode string, counter uint64, secret string) bool {
 	rv, _ := ValidateCustom(
-		input,
+		passcode,
 		counter,
 		secret,
 		ValidateOpts{
@@ -48,6 +49,7 @@ func Validate(input string, counter uint64, secret string) bool {
 	return rv
 }
 
+// ValidateOpts provides options for ValidateCustom().
 type ValidateOpts struct {
 	// Digits as part of the input. Defaults to 6.
 	Digits otp.Digits
@@ -55,16 +57,18 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-func ValidateCustom(input string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
-	input = strings.TrimSpace(input)
+// ValidateCustom validates an HOTP with customizable options. Most users should
+// use Validate().
+func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
+	passcode = strings.TrimSpace(passcode)
 
 	switch opts.Digits {
 	case otp.DigitsSix:
-		if len(input) != 6 {
+		if len(passcode) != 6 {
 			return false, otp.ErrValidateInputInvalidLength6
 		}
 	case otp.DigitsEight:
-		if len(input) != 8 {
+		if len(passcode) != 8 {
 			return false, otp.ErrValidateInputInvalidLength8
 		}
 	default:
@@ -106,14 +110,14 @@ func ValidateCustom(input string, counter uint64, secret string, opts ValidateOp
 
 	otpstr := opts.Digits.Format(mod)
 
-	if subtle.ConstantTimeCompare([]byte(otpstr), []byte(input)) == 1 {
+	if subtle.ConstantTimeCompare([]byte(otpstr), []byte(passcode)) == 1 {
 		return true, nil
 	}
 
 	return false, nil
 }
 
-// Options for .Generate()
+// GenerateOpts provides options for .Generate()
 type GenerateOpts struct {
 	// Name of the issuing Organization/Company.
 	Issuer string
@@ -127,7 +131,7 @@ type GenerateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-// Generates a new HOTP Key.
+// Generate creates a new HOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
