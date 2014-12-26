@@ -32,6 +32,7 @@ type tc struct {
 	Secret  string
 }
 
+// Test values from http://tools.ietf.org/html/rfc4226#appendix-D
 func TestValidateRFCMatrix(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
@@ -40,6 +41,12 @@ func TestValidateRFCMatrix(t *testing.T) {
 		tc{1, "287082", otp.AlgorithmSHA1, secSha1},
 		tc{2, "359152", otp.AlgorithmSHA1, secSha1},
 		tc{3, "969429", otp.AlgorithmSHA1, secSha1},
+		tc{4, "338314", otp.AlgorithmSHA1, secSha1},
+		tc{5, "254676", otp.AlgorithmSHA1, secSha1},
+		tc{6, "287922", otp.AlgorithmSHA1, secSha1},
+		tc{7, "162583", otp.AlgorithmSHA1, secSha1},
+		tc{8, "399871", otp.AlgorithmSHA1, secSha1},
+		tc{9, "520489", otp.AlgorithmSHA1, secSha1},
 	}
 
 	for _, tx := range tests {
@@ -53,4 +60,68 @@ func TestValidateRFCMatrix(t *testing.T) {
 		require.True(t, valid,
 			"unexpected totp failure totp=%s mode=%v counter=%v", tx.TOTP, tx.Mode, tx.Counter)
 	}
+}
+
+func TestValidateInvalid(t *testing.T) {
+	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+
+	valid, err := ValidateCustom("foo", 11, secSha1,
+		ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.Equal(t, otp.ValidateInputInvalidLength6, err, "Expected Invalid length error.")
+	require.Equal(t, false, valid, "Valid should be false when we have an error.")
+
+	valid, err = ValidateCustom("foo", 11, secSha1,
+		ValidateOpts{
+			Digits:    otp.DigitsEight,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.Equal(t, otp.ValidateInputInvalidLength8, err, "Expected Invalid length error.")
+	require.Equal(t, false, valid, "Valid should be false when we have an error.")
+
+	valid, err = ValidateCustom("000000", 11, secSha1,
+		ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.NoError(t, err, "Expected no error.")
+	require.Equal(t, false, valid, "Valid should be false.")
+
+	valid = Validate("000000", 11, secSha1)
+	require.Equal(t, false, valid, "Valid should be false.")
+}
+
+func TestGenerate(t *testing.T) {
+	k, err := Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+	})
+	require.NoError(t, err, "generate basic TOTP")
+	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
+	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
+	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		SecretSize:  20,
+	})
+	require.NoError(t, err, "generate larger TOTP")
+	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "",
+		AccountName: "alice@example.com",
+	})
+	require.Equal(t, otp.GenerateMissingIssuer, err, "generate missing issuer")
+	require.Nil(t, k, "key should be nil on error.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "Foobar, Inc",
+		AccountName: "",
+	})
+	require.Equal(t, otp.GenerateMissingAccountName, err, "generate missing account name.")
+	require.Nil(t, k, "key should be nil on error.")
 }
