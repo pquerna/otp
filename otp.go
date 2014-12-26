@@ -25,12 +25,19 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"errors"
 	"fmt"
 	"hash"
 	"image"
 	"net/url"
 	"strings"
 )
+
+var ValidateSecretInvalidBase32 = errors.New("Decoding of secret as base32 failed.")
+var ValidateInputInvalidLength6 = errors.New("Input was not 6 characters")
+var ValidateInputInvalidLength8 = errors.New("Input was not 8 characters")
+var GenerateMissingIssuer = errors.New("Issuer must be set")
+var GenerateMissingAccountName = errors.New("AccountName must be set")
 
 type Key struct {
 	orig string

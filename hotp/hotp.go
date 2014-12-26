@@ -15,30 +15,31 @@
  *
  */
 
-package totp
+package hotp
 
 import (
 	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/hotp"
 
+	"crypto/hmac"
 	"crypto/rand"
 	"encoding/base32"
-	"errors"
+	"encoding/binary"
+	"fmt"
 	"math"
 	"net/url"
-	"strconv"
-	"time"
+	"strings"
 )
 
-// Validates that input is a valid TOTP given
-// the current time. A shortcut for ValidateCustom.
-func Validate(input string, secret string) bool {
+const debug = false
+
+// Validates that input is a valid HOTP given
+// the secret and a counter. A shortcut for ValidateCustom.
+func Validate(input string, counter uint64, secret string) bool {
 	rv, _ := ValidateCustom(
 		input,
+		counter,
 		secret,
-		time.Now().UTC(),
 		ValidateOpts{
-			Period:    30,
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
 		},
@@ -47,44 +48,64 @@ func Validate(input string, secret string) bool {
 }
 
 type ValidateOpts struct {
-	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
-	Period uint
-	// Periods before or affter the current time to allow.  Value of 1 allows up to Period
-	// of either side of the specified time.  Defaults to 0 allowed skews.
-	Skew uint
 	// Digits as part of the input. Defaults to 6.
 	Digits otp.Digits
 	// Algorithm to use for HMAC. Defaults to SHA1.
 	Algorithm otp.Algorithm
 }
 
-func ValidateCustom(input string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
-	if opts.Period == 0 {
-		opts.Period = 30
+func ValidateCustom(input string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
+	input = strings.TrimSpace(input)
+
+	switch opts.Digits {
+	case otp.DigitsSix:
+		if len(input) != 6 {
+			return false, otp.ValidateInputInvalidLength6
+		}
+	case otp.DigitsEight:
+		if len(input) != 8 {
+			return false, otp.ValidateInputInvalidLength8
+		}
+	default:
+		panic("unsupported Digits value.")
 	}
 
-	counters := []uint64{}
-	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
-
-	counters = append(counters, uint64(counter))
-	for i := 1; i <= int(opts.Skew); i++ {
-		counters = append(counters, uint64(counter+int64(i)))
-		counters = append(counters, uint64(counter-int64(i)))
+	secretBytes, err := base32.StdEncoding.DecodeString(secret)
+	if err != nil {
+		return false, otp.ValidateSecretInvalidBase32
 	}
 
-	for _, counter := range counters {
-		rv, err := hotp.ValidateCustom(input, counter, secret, hotp.ValidateOpts{
-			Digits:    opts.Digits,
-			Algorithm: opts.Algorithm,
-		})
+	buf := make([]byte, 8)
+	mac := hmac.New(opts.Algorithm.Hash, secretBytes)
+	binary.BigEndian.PutUint64(buf, counter)
+	if debug {
+		fmt.Printf("counter=%v\n", counter)
+		fmt.Printf("buf=%v\n", buf)
+	}
 
-		if err != nil {
-			return false, err
-		}
+	mac.Write(buf)
+	sum := mac.Sum(nil)
 
-		if rv == true {
-			return true, nil
-		}
+	// "Dynamic truncation" in RFC 4226
+	// http://tools.ietf.org/html/rfc4226#section-5.4
+	offset := sum[len(sum)-1] & 0xf
+	value := int64(((int(sum[offset]) & 0x7f) << 24) |
+		((int(sum[offset+1] & 0xff)) << 16) |
+		((int(sum[offset+2] & 0xff)) << 8) |
+		(int(sum[offset+3]) & 0xff))
+
+	l := opts.Digits.Legnth()
+	mod := int32(value % int64(math.Pow10(l)))
+
+	if debug {
+		fmt.Printf("offset=%v\n", offset)
+		fmt.Printf("value=%v\n", value)
+		fmt.Printf("mod'ed=%v\n", mod)
+	}
+
+	otpstr := opts.Digits.Format(mod)
+	if otpstr == input {
+		return true, nil
 	}
 
 	return false, nil
@@ -96,8 +117,6 @@ type GenerateOpts struct {
 	Issuer string
 	// Name of the User's Account (eg, email address)
 	AccountName string
-	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
-	Period uint
 	// Size in size of the generated Secret. Defaults to 10 bytes.
 	SecretSize uint
 	// Digits to request. Defaults to 6.
@@ -106,22 +125,15 @@ type GenerateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-var GenerateMissingIssuer = errors.New("Issuer must be set")
-var GenerateMissingAccountName = errors.New("AccountName must be set")
-
-// Generates a new TOTP Key.
+// Generates a new HOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
-		return nil, GenerateMissingIssuer
+		return nil, otp.GenerateMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, GenerateMissingAccountName
-	}
-
-	if opts.Period == 0 {
-		opts.Period = 30
+		return nil, otp.GenerateMissingAccountName
 	}
 
 	if opts.SecretSize == 0 {
@@ -139,13 +151,12 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 
 	v.Set("secret", base32.StdEncoding.EncodeToString(secret))
 	v.Set("issuer", opts.Issuer)
-	v.Set("period", strconv.FormatUint(uint64(opts.Period), 10))
 	v.Set("algorithm", opts.Algorithm.String())
 	v.Set("digits", opts.Digits.String())
 
 	u := url.URL{
 		Scheme:   "otpauth",
-		Host:     "totp",
+		Host:     "hotp",
 		Path:     "/" + opts.Issuer + ":" + opts.AccountName,
 		RawQuery: v.Encode(),
 	}
