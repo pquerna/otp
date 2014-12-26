@@ -22,6 +22,7 @@ import (
 
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/base32"
 	"encoding/binary"
 	"fmt"
@@ -104,7 +105,8 @@ func ValidateCustom(input string, counter uint64, secret string, opts ValidateOp
 	}
 
 	otpstr := opts.Digits.Format(mod)
-	if otpstr == input {
+
+	if subtle.ConstantTimeCompare([]byte(otpstr), []byte(input)) == 1 {
 		return true, nil
 	}
 
