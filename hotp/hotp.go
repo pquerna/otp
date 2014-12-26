@@ -95,7 +95,7 @@ func ValidateCustom(input string, counter uint64, secret string, opts ValidateOp
 		((int(sum[offset+2] & 0xff)) << 8) |
 		(int(sum[offset+3]) & 0xff))
 
-	l := opts.Digits.Legnth()
+	l := opts.Digits.Length()
 	mod := int32(value % int64(math.Pow10(l)))
 
 	if debug {

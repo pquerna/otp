@@ -54,6 +54,11 @@ type Key struct {
 	url  *url.URL
 }
 
+// NewKeyFromURL creates a new Key from an TOTP or HOTP url.
+//
+// The URL format is documented here:
+//   https://code.google.com/p/google-authenticator/wiki/KeyUriFormat
+//
 func NewKeyFromURL(orig string) (*Key, error) {
 	u, err := url.Parse(orig)
 
@@ -71,6 +76,9 @@ func (k *Key) String() string {
 	return k.orig
 }
 
+// Image returns an QR-Code image of the specified width and height,
+// suitable for use by many clients like Google-Authenricator
+// to enroll a user's TOTP/HOTP key.
 func (k *Key) Image(width int, height int) (image.Image, error) {
 	b, err := qr.Encode(k.orig, qr.M, qr.Auto)
 
@@ -87,10 +95,12 @@ func (k *Key) Image(width int, height int) (image.Image, error) {
 	return b, nil
 }
 
+// Type returns "hotp" or "totp".
 func (k *Key) Type() string {
 	return k.url.Host
 }
 
+// Issuer returns the name of the issuing organization.
 func (k *Key) Issuer() string {
 	q := k.url.Query()
 
@@ -110,6 +120,7 @@ func (k *Key) Issuer() string {
 	return p[:i]
 }
 
+// AccountName returns the name of the user's account.
 func (k *Key) AccountName() string {
 	p := strings.TrimPrefix(k.url.Path, "/")
 	i := strings.Index(p, ":")
@@ -121,12 +132,15 @@ func (k *Key) AccountName() string {
 	return p[i+1:]
 }
 
+// Secret returns the opaque secret for this Key.
 func (k *Key) Secret() string {
 	q := k.url.Query()
 
 	return q.Get("secret")
 }
 
+// Algorithm represents the hashing function to use in the HMAC
+// operation needed for OTPs.
 type Algorithm int
 
 const (
@@ -164,6 +178,8 @@ func (a Algorithm) Hash() hash.Hash {
 	panic("unreached")
 }
 
+// Digits represents the number of digits present in the
+// user's OTP passcode. Six and Eight are the most common values.
 type Digits int
 
 const (
@@ -171,6 +187,7 @@ const (
 	DigitsEight
 )
 
+// Format converts an integer into the zero-filled size for this Digits.
 func (d Digits) Format(in int32) string {
 	switch d {
 	case DigitsSix:
@@ -181,7 +198,8 @@ func (d Digits) Format(in int32) string {
 	panic("unreached")
 }
 
-func (d Digits) Legnth() int {
+// Length returns the number of characters for this Digits.
+func (d Digits) Length() int {
 	switch d {
 	case DigitsSix:
 		return 6
