@@ -1,5 +1,9 @@
 # otp: One Time Password utilities Go / Golang
 
+[![Build Status](https://travis-ci.org/pquerna/otp.svg?branch=master)](https://travis-ci.org/pquerna/otp)
+
+[![GoDoc](https://godoc.org/github.com/pquerna/otp?status.svg)](https://godoc.org/github.com/pquerna/otp)
+
 # STATUS: IN DEVELOPMENT
 
 Supports:
