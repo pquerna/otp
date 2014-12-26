@@ -61,11 +61,11 @@ func ValidateCustom(input string, counter uint64, secret string, opts ValidateOp
 	switch opts.Digits {
 	case otp.DigitsSix:
 		if len(input) != 6 {
-			return false, otp.ValidateInputInvalidLength6
+			return false, otp.ErrValidateInputInvalidLength6
 		}
 	case otp.DigitsEight:
 		if len(input) != 8 {
-			return false, otp.ValidateInputInvalidLength8
+			return false, otp.ErrValidateInputInvalidLength8
 		}
 	default:
 		panic("unsupported Digits value.")
@@ -73,7 +73,7 @@ func ValidateCustom(input string, counter uint64, secret string, opts ValidateOp
 
 	secretBytes, err := base32.StdEncoding.DecodeString(secret)
 	if err != nil {
-		return false, otp.ValidateSecretInvalidBase32
+		return false, otp.ErrValidateSecretInvalidBase32
 	}
 
 	buf := make([]byte, 8)
@@ -131,11 +131,11 @@ type GenerateOpts struct {
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
-		return nil, otp.GenerateMissingIssuer
+		return nil, otp.ErrGenerateMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, otp.GenerateMissingAccountName
+		return nil, otp.ErrGenerateMissingAccountName
 	}
 
 	if opts.SecretSize == 0 {

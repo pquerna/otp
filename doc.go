@@ -15,7 +15,7 @@
  *
  */
 
-// The OTP package implements both HOTP and TOTP  based
+// Package otp implements both HOTP and TOTP based
 // one time passcodes in a Google Authenticator compatible manner.
 //
 // When adding a TOTP for a user, you must store the "secret" value

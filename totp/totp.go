@@ -23,7 +23,6 @@ import (
 
 	"crypto/rand"
 	"encoding/base32"
-	"errors"
 	"math"
 	"net/url"
 	"strconv"
@@ -106,18 +105,15 @@ type GenerateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-var GenerateMissingIssuer = errors.New("Issuer must be set")
-var GenerateMissingAccountName = errors.New("AccountName must be set")
-
 // Generates a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
-		return nil, GenerateMissingIssuer
+		return nil, otp.ErrGenerateMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, GenerateMissingAccountName
+		return nil, otp.ErrGenerateMissingAccountName
 	}
 
 	if opts.Period == 0 {

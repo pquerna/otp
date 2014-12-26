@@ -70,7 +70,7 @@ func TestValidateInvalid(t *testing.T) {
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
 		})
-	require.Equal(t, otp.ValidateInputInvalidLength6, err, "Expected Invalid length error.")
+	require.Equal(t, otp.ErrValidateInputInvalidLength6, err, "Expected Invalid length error.")
 	require.Equal(t, false, valid, "Valid should be false when we have an error.")
 
 	valid, err = ValidateCustom("foo", 11, secSha1,
@@ -78,7 +78,7 @@ func TestValidateInvalid(t *testing.T) {
 			Digits:    otp.DigitsEight,
 			Algorithm: otp.AlgorithmSHA1,
 		})
-	require.Equal(t, otp.ValidateInputInvalidLength8, err, "Expected Invalid length error.")
+	require.Equal(t, otp.ErrValidateInputInvalidLength8, err, "Expected Invalid length error.")
 	require.Equal(t, false, valid, "Valid should be false when we have an error.")
 
 	valid, err = ValidateCustom("000000", 11, secSha1,
@@ -115,13 +115,13 @@ func TestGenerate(t *testing.T) {
 		Issuer:      "",
 		AccountName: "alice@example.com",
 	})
-	require.Equal(t, otp.GenerateMissingIssuer, err, "generate missing issuer")
+	require.Equal(t, otp.ErrGenerateMissingIssuer, err, "generate missing issuer")
 	require.Nil(t, k, "key should be nil on error.")
 
 	k, err = Generate(GenerateOpts{
 		Issuer:      "Foobar, Inc",
 		AccountName: "",
 	})
-	require.Equal(t, otp.GenerateMissingAccountName, err, "generate missing account name.")
+	require.Equal(t, otp.ErrGenerateMissingAccountName, err, "generate missing account name.")
 	require.Nil(t, k, "key should be nil on error.")
 }
