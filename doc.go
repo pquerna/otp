@@ -33,14 +33,15 @@
 //		"image/png"
 //	)
 //
-//	key := totp.Generate(totp.GenerateOpts{
+//	key, err := totp.Generate(totp.GenerateOpts{
 //			Issuer: "Example.com",
 //			AccountName: "alice@example.com"
 //	})
 //
-//	// Convert TOTP key into a PNG
-//	buf bytes.Buffer
-//	png.Encode(&buf, key.Image(200, 200))
+//	// Convert TOTP key into a QR code encoded as a PNG image.
+//	var buf bytes.Buffer
+//	img, err := key.Image(200, 200)
+//	png.Encode(&buf, img)
 //
 //	// display the QR code to the user.
 //	display(buf.Bytes())
