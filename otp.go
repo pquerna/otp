@@ -21,6 +21,12 @@ import (
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
+	"fmt"
+	"hash"
 	"image"
 	"net/url"
 	"strings"
@@ -102,4 +108,78 @@ func (k *Key) Secret() string {
 	q := k.url.Query()
 
 	return q.Get("secret")
+}
+
+type Algorithm int
+
+const (
+	AlgorithmSHA1 Algorithm = iota
+	AlgorithmSHA256
+	AlgorithmSHA512
+	AlgorithmMD5
+)
+
+func (a Algorithm) String() string {
+	switch a {
+	case AlgorithmSHA1:
+		return "SHA1"
+	case AlgorithmSHA256:
+		return "SHA256"
+	case AlgorithmSHA512:
+		return "SHA512"
+	case AlgorithmMD5:
+		return "MD5"
+	}
+	panic("unreached")
+}
+
+func (a Algorithm) Hash() hash.Hash {
+	switch a {
+	case AlgorithmSHA1:
+		return sha1.New()
+	case AlgorithmSHA256:
+		return sha256.New()
+	case AlgorithmSHA512:
+		return sha512.New()
+	case AlgorithmMD5:
+		return md5.New()
+	}
+	panic("unreached")
+}
+
+type Digits int
+
+const (
+	DigitsSix Digits = iota
+	DigitsEight
+)
+
+func (d Digits) Format(in int32) string {
+	switch d {
+	case DigitsSix:
+		return fmt.Sprintf("%06d", in)
+	case DigitsEight:
+		return fmt.Sprintf("%08d", in)
+	}
+	panic("unreached")
+}
+
+func (d Digits) Legnth() int {
+	switch d {
+	case DigitsSix:
+		return 6
+	case DigitsEight:
+		return 8
+	}
+	panic("unreached")
+}
+
+func (d Digits) String() string {
+	switch d {
+	case DigitsSix:
+		return "6"
+	case DigitsEight:
+		return "8"
+	}
+	panic("unreached")
 }

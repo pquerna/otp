@@ -18,9 +18,10 @@
 package totp
 
 import (
-	"encoding/base32"
+	"github.com/pquerna/otp"
 	"github.com/stretchr/testify/require"
 
+	"encoding/base32"
 	"testing"
 	"time"
 )
@@ -28,7 +29,7 @@ import (
 type tc struct {
 	TS     int64
 	TOTP   string
-	Mode   Algorithm
+	Mode   otp.Algorithm
 	Secret string
 }
 
@@ -46,30 +47,30 @@ func TestValidateRFCMatrix(t *testing.T) {
 	secSha512 := base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
 
 	tests := []tc{
-		tc{59, "94287082", AlgorithmSHA1, secSha1},
-		tc{59, "46119246", AlgorithmSHA256, secSha256},
-		tc{59, "90693936", AlgorithmSHA512, secSha512},
-		tc{1111111109, "07081804", AlgorithmSHA1, secSha1},
-		tc{1111111109, "68084774", AlgorithmSHA256, secSha256},
-		tc{1111111109, "25091201", AlgorithmSHA512, secSha512},
-		tc{1111111111, "14050471", AlgorithmSHA1, secSha1},
-		tc{1111111111, "67062674", AlgorithmSHA256, secSha256},
-		tc{1111111111, "99943326", AlgorithmSHA512, secSha512},
-		tc{1234567890, "89005924", AlgorithmSHA1, secSha1},
-		tc{1234567890, "91819424", AlgorithmSHA256, secSha256},
-		tc{1234567890, "93441116", AlgorithmSHA512, secSha512},
-		tc{2000000000, "69279037", AlgorithmSHA1, secSha1},
-		tc{2000000000, "90698825", AlgorithmSHA256, secSha256},
-		tc{2000000000, "38618901", AlgorithmSHA512, secSha512},
-		tc{20000000000, "65353130", AlgorithmSHA1, secSha1},
-		tc{20000000000, "77737706", AlgorithmSHA256, secSha256},
-		tc{20000000000, "47863826", AlgorithmSHA512, secSha512},
+		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		tc{59, "46119246", otp.AlgorithmSHA256, secSha256},
+		tc{59, "90693936", otp.AlgorithmSHA512, secSha512},
+		tc{1111111109, "07081804", otp.AlgorithmSHA1, secSha1},
+		tc{1111111109, "68084774", otp.AlgorithmSHA256, secSha256},
+		tc{1111111109, "25091201", otp.AlgorithmSHA512, secSha512},
+		tc{1111111111, "14050471", otp.AlgorithmSHA1, secSha1},
+		tc{1111111111, "67062674", otp.AlgorithmSHA256, secSha256},
+		tc{1111111111, "99943326", otp.AlgorithmSHA512, secSha512},
+		tc{1234567890, "89005924", otp.AlgorithmSHA1, secSha1},
+		tc{1234567890, "91819424", otp.AlgorithmSHA256, secSha256},
+		tc{1234567890, "93441116", otp.AlgorithmSHA512, secSha512},
+		tc{2000000000, "69279037", otp.AlgorithmSHA1, secSha1},
+		tc{2000000000, "90698825", otp.AlgorithmSHA256, secSha256},
+		tc{2000000000, "38618901", otp.AlgorithmSHA512, secSha512},
+		tc{20000000000, "65353130", otp.AlgorithmSHA1, secSha1},
+		tc{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
+		tc{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
 	}
 
 	for _, tx := range tests {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
 			ValidateOpts{
-				Digits:    DigitsEight,
+				Digits:    otp.DigitsEight,
 				Algorithm: tx.Mode,
 			})
 		require.NoError(t, err,
@@ -83,15 +84,15 @@ func TestValidateSkew(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
 	tests := []tc{
-		tc{29, "94287082", AlgorithmSHA1, secSha1},
-		tc{59, "94287082", AlgorithmSHA1, secSha1},
-		tc{61, "94287082", AlgorithmSHA1, secSha1},
+		tc{29, "94287082", otp.AlgorithmSHA1, secSha1},
+		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		tc{61, "94287082", otp.AlgorithmSHA1, secSha1},
 	}
 
 	for _, tx := range tests {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
 			ValidateOpts{
-				Digits:    DigitsEight,
+				Digits:    otp.DigitsEight,
 				Algorithm: tx.Mode,
 				Skew:      1,
 			})
