@@ -19,7 +19,7 @@
 // one time passcodes in a Google Authenticator compatible manner.
 //
 // When adding a TOTP for a user, you must store the "secret" value
-// persistently. It is recommend to store the in an encrypted field in your
+// persistently. It is recommend to store the secret in an encrypted field in your
 // datastore.  Due to how TOTP works, it is not possible to store a hash
 // for the secret value like you would a password.
 //
