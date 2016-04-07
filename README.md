@@ -39,7 +39,7 @@ For an example of a working enrollment work flow, [Github has documented theirs]
 
 ### Recovery Codes
 
-When a user losses access to their TOTP device, they would no longer have access to their account.  Because TOTPs are often configured on mobile devices that can be lost, stolen or damaged, this is a common problem. For this reason many providers give their users "backup codes" or "recovery codes".  These are a set of one time use codes that can be used instead of the TOTP.  These can simply be randomly generated strings that you store in your backend.  [Github's documentation provides an overview of the user experience](
+When a user loses access to their TOTP device, they would no longer have access to their account.  Because TOTPs are often configured on mobile devices that can be lost, stolen or damaged, this is a common problem. For this reason many providers give their users "backup codes" or "recovery codes".  These are a set of one time use codes that can be used instead of the TOTP.  These can simply be randomly generated strings that you store in your backend.  [Github's documentation provides an overview of the user experience](
 https://help.github.com/articles/downloading-your-two-factor-authentication-recovery-codes/).
 
 
