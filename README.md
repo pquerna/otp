@@ -1,6 +1,6 @@
 # otp: One Time Password utilities Go / Golang
 
-[![GoDoc](https://godoc.org/github.com/pquerna/otp?status.svg)](https://godoc.org/github.com/pquerna/otp) [![Build Status](https://travis-ci.org/pquerna/otp.svg?branch=master)](https://travis-ci.org/pquerna/otp) 
+[![GoDoc](https://godoc.org/github.com/pquerna/otp?status.svg)](https://godoc.org/github.com/pquerna/otp) [![Build Status](https://travis-ci.org/pquerna/otp.svg?branch=master)](https://travis-ci.org/pquerna/otp)
 
 # Why One Time Passwords?
 
@@ -15,6 +15,7 @@ Because TOTP is standardized and widely deployed, there are many [mobile clients
 * Generating QR Code images for easy user enrollment.
 * Time-based One-time Password Algorithm (TOTP) (RFC 6238): Time based OTP, the most commonly used method.
 * HMAC-based One-time Password Algorithm (HOTP) (RFC 4226): Counter based OTP, which TOTP is based upon.
+* Generation and Validation of codes for either algorithm.
 
 ## Implementing TOTP in your application:
 
@@ -28,6 +29,13 @@ For an example of a working enrollment work flow, [Github has documented theirs]
 1. Test that the user can successfully use their TOTP. `totp.Validate(...)`.
 1. Store TOTP Secret for the User in your backend. `key.Secret()`
 1. Provide the user with "recovery codes". (See Recovery Codes bellow)
+
+### Code Generation
+
+* In either TOTP or HOTP cases, use the `GenerateCode` function and a counter or
+  `time.Time` struct to generate a valid code compatible with most implementations.
+* For uncommon or custom settings, or to catch unlikely errors, use `GenerateCodeCustom`
+  in either module.
 
 ### Validation
 
