@@ -19,6 +19,7 @@ package hotp
 
 import (
 	"github.com/pquerna/otp"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"encoding/base32"
@@ -32,11 +33,10 @@ type tc struct {
 	Secret  string
 }
 
-// Test values from http://tools.ietf.org/html/rfc4226#appendix-D
-func TestValidateRFCMatrix(t *testing.T) {
-	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+var (
+	secSha1 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
-	tests := []tc{
+	rfcMatrixTCs = []tc{
 		tc{0, "755224", otp.AlgorithmSHA1, secSha1},
 		tc{1, "287082", otp.AlgorithmSHA1, secSha1},
 		tc{2, "359152", otp.AlgorithmSHA1, secSha1},
@@ -49,7 +49,12 @@ func TestValidateRFCMatrix(t *testing.T) {
 		tc{9, "520489", otp.AlgorithmSHA1, secSha1},
 	}
 
-	for _, tx := range tests {
+)
+
+// Test values from http://tools.ietf.org/html/rfc4226#appendix-D
+func TestValidateRFCMatrix(t *testing.T) {
+
+	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Counter, tx.Secret,
 			ValidateOpts{
 				Digits:    otp.DigitsSix,
@@ -59,6 +64,18 @@ func TestValidateRFCMatrix(t *testing.T) {
 			"unexpected error totp=%s mode=%v counter=%v", tx.TOTP, tx.Mode, tx.Counter)
 		require.True(t, valid,
 			"unexpected totp failure totp=%s mode=%v counter=%v", tx.TOTP, tx.Mode, tx.Counter)
+	}
+}
+
+func TestGenerateRFCMatrix(t *testing.T) {
+	for _, tx := range rfcMatrixTCs {
+		passcode, err := GenerateCodeCustom(tx.Secret, tx.Counter,
+			ValidateOpts{
+				Digits:    otp.DigitsSix,
+				Algorithm: tx.Mode,
+			})
+		assert.Nil(t, err)
+		assert.Equal(t, tx.TOTP, passcode)
 	}
 }
 

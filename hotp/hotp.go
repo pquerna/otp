@@ -57,27 +57,23 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
-// ValidateCustom validates an HOTP with customizable options. Most users should
-// use Validate().
-func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
-	passcode = strings.TrimSpace(passcode)
+// GenerateCode creates a HOTP passcode given a counter and secret.
+// This is a shortcut for GenerateCodeCustom, with parameters that
+// are compataible with Google-Authenticator.
+func GenerateCode(secret string, counter uint64) string {
+	code, _ := GenerateCodeCustom(secret, counter, ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	return code
+}
 
-	switch opts.Digits {
-	case otp.DigitsSix:
-		if len(passcode) != 6 {
-			return false, otp.ErrValidateInputInvalidLength6
-		}
-	case otp.DigitsEight:
-		if len(passcode) != 8 {
-			return false, otp.ErrValidateInputInvalidLength8
-		}
-	default:
-		panic("unsupported Digits value.")
-	}
-
+// GenerateCodeCustom uses a counter and secret value and options struct to
+// create a passcode.
+func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passcode string, err error) {
 	secretBytes, err := base32.StdEncoding.DecodeString(secret)
 	if err != nil {
-		return false, otp.ErrValidateSecretInvalidBase32
+		return "", otp.ErrValidateSecretInvalidBase32
 	}
 
 	buf := make([]byte, 8)
@@ -108,7 +104,31 @@ func ValidateCustom(passcode string, counter uint64, secret string, opts Validat
 		fmt.Printf("mod'ed=%v\n", mod)
 	}
 
-	otpstr := opts.Digits.Format(mod)
+	return opts.Digits.Format(mod), nil
+}
+
+// ValidateCustom validates an HOTP with customizable options. Most users should
+// use Validate().
+func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
+	passcode = strings.TrimSpace(passcode)
+
+	switch opts.Digits {
+	case otp.DigitsSix:
+		if len(passcode) != 6 {
+			return false, otp.ErrValidateInputInvalidLength6
+		}
+	case otp.DigitsEight:
+		if len(passcode) != 8 {
+			return false, otp.ErrValidateInputInvalidLength8
+		}
+	default:
+		panic("unsupported Digits value.")
+	}
+
+	otpstr, err := GenerateCodeCustom(secret, counter, opts)
+	if err != nil {
+		return false, err
+	}
 
 	if subtle.ConstantTimeCompare([]byte(otpstr), []byte(passcode)) == 1 {
 		return true, nil
