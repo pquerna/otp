@@ -19,6 +19,7 @@ package totp
 
 import (
 	"github.com/pquerna/otp"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"encoding/base32"
@@ -33,20 +34,12 @@ type tc struct {
 	Secret string
 }
 
-//
-// Test vectors from http://tools.ietf.org/html/rfc6238#appendix-B
-// NOTE -- the test vectors are documented as having the SAME
-// secret -- this is WRONG -- they have a variable secret
-// depending upon the hmac algorithm:
-// 		http://www.rfc-editor.org/errata_search.php?rfc=6238
-// this only took a few hours of head/desk interaction to figure out.
-//
-func TestValidateRFCMatrix(t *testing.T) {
-	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
-	secSha256 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890123456789012"))
-	secSha512 := base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
+var (
+	secSha1   = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+	secSha256 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890123456789012"))
+	secSha512 = base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
 
-	tests := []tc{
+	rfcMatrixTCs = []tc{
 		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
 		tc{59, "46119246", otp.AlgorithmSHA256, secSha256},
 		tc{59, "90693936", otp.AlgorithmSHA512, secSha512},
@@ -66,8 +59,18 @@ func TestValidateRFCMatrix(t *testing.T) {
 		tc{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
 		tc{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
 	}
+)
 
-	for _, tx := range tests {
+//
+// Test vectors from http://tools.ietf.org/html/rfc6238#appendix-B
+// NOTE -- the test vectors are documented as having the SAME
+// secret -- this is WRONG -- they have a variable secret
+// depending upon the hmac algorithm:
+// 		http://www.rfc-editor.org/errata_search.php?rfc=6238
+// this only took a few hours of head/desk interaction to figure out.
+//
+func TestValidateRFCMatrix(t *testing.T) {
+	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
 			ValidateOpts{
 				Digits:    otp.DigitsEight,
@@ -77,6 +80,18 @@ func TestValidateRFCMatrix(t *testing.T) {
 			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
 		require.True(t, valid,
 			"unexpected totp failure totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+	}
+}
+
+func TestGenerateRFCTCs(t *testing.T) {
+	for _, tx := range rfcMatrixTCs {
+		passcode, err := GenerateCodeCustom(tx.Secret, time.Unix(tx.TS, 0).UTC(),
+			ValidateOpts{
+				Digits:    otp.DigitsEight,
+				Algorithm: tx.Mode,
+			})
+		assert.Nil(t, err)
+		assert.Equal(t, tx.TOTP, passcode)
 	}
 }
 

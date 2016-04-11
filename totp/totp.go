@@ -47,6 +47,18 @@ func Validate(passcode string, secret string) bool {
 	return rv
 }
 
+// GenerateCode creates a TOTP token using the current time.
+// A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
+// that is compatible with Google-Authenticator and most clients.
+func GenerateCode(secret string, t time.Time) (string, error) {
+	return GenerateCodeCustom(secret, t, ValidateOpts{
+		Period:    30,
+		Skew:      1,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
+}
+
 // ValidateOpts provides options for ValidateCustom().
 type ValidateOpts struct {
 	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
@@ -59,6 +71,24 @@ type ValidateOpts struct {
 	Digits otp.Digits
 	// Algorithm to use for HMAC. Defaults to SHA1.
 	Algorithm otp.Algorithm
+}
+
+// GenerateCodeCustom takes a timepoint and produces a passcode using a
+// secret and the provided opts. (Under the hood, this is making an adapted
+// call to hotp.GenerateCodeCustom)
+func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode string, err error) {
+	if opts.Period == 0 {
+		opts.Period = 30
+	}
+	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
+	passcode, err = hotp.GenerateCodeCustom(secret, counter, hotp.ValidateOpts{
+		Digits:    opts.Digits,
+		Algorithm: opts.Algorithm,
+	})
+	if err != nil {
+		return "", err
+	}
+	return passcode, nil
 }
 
 // ValidateCustom validates a TOTP given a user specified time and custom options.
