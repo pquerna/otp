@@ -50,14 +50,13 @@ func Validate(passcode string, secret string) bool {
 // GenerateCode creates a TOTP token using the current time.
 // A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
 // that is compatible with Google-Authenticator and most clients.
-func GenerateCode(secret string, t time.Time) string {
-	code, _ := GenerateCodeCustom(secret, t, 		ValidateOpts{
-				Period:    30,
-				Skew:      1,
-				Digits:    otp.DigitsSix,
-				Algorithm: otp.AlgorithmSHA1,
-			})
-	return code
+func GenerateCode(secret string, t time.Time) (string, error) {
+	return GenerateCodeCustom(secret, t, ValidateOpts{
+		Period:    30,
+		Skew:      1,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
 }
 
 // ValidateOpts provides options for ValidateCustom().

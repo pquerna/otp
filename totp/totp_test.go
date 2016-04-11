@@ -35,7 +35,7 @@ type tc struct {
 }
 
 var (
-	secSha1 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+	secSha1   = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 	secSha256 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890123456789012"))
 	secSha512 = base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
 
@@ -87,7 +87,7 @@ func TestGenerateRFCTCs(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		passcode, err := GenerateCodeCustom(tx.Secret, time.Unix(tx.TS, 0).UTC(),
 			ValidateOpts{
-				Digits: otp.DigitsEight,
+				Digits:    otp.DigitsEight,
 				Algorithm: tx.Mode,
 			})
 		assert.Nil(t, err)

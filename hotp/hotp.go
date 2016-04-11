@@ -60,12 +60,11 @@ type ValidateOpts struct {
 // GenerateCode creates a HOTP passcode given a counter and secret.
 // This is a shortcut for GenerateCodeCustom, with parameters that
 // are compataible with Google-Authenticator.
-func GenerateCode(secret string, counter uint64) string {
-	code, _ := GenerateCodeCustom(secret, counter, ValidateOpts{
-			Digits:    otp.DigitsSix,
-			Algorithm: otp.AlgorithmSHA1,
-		})
-	return code
+func GenerateCode(secret string, counter uint64) (string, error) {
+	return GenerateCodeCustom(secret, counter, ValidateOpts{
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
 }
 
 // GenerateCodeCustom uses a counter and secret value and options struct to

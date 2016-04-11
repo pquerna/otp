@@ -48,7 +48,6 @@ var (
 		tc{8, "399871", otp.AlgorithmSHA1, secSha1},
 		tc{9, "520489", otp.AlgorithmSHA1, secSha1},
 	}
-
 )
 
 // Test values from http://tools.ietf.org/html/rfc4226#appendix-D
