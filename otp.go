@@ -36,11 +36,8 @@ import (
 // Error when attempting to convert the secret from base32 to raw bytes.
 var ErrValidateSecretInvalidBase32 = errors.New("Decoding of secret as base32 failed.")
 
-// The user provided passcode was not 6 characters as expected.
-var ErrValidateInputInvalidLength6 = errors.New("Input was not 6 characters")
-
-// The user provided passcode was not 8 characters as expected.
-var ErrValidateInputInvalidLength8 = errors.New("Input was not 8 characters")
+// The user provided passcode length was not expected.
+var ErrValidateInputInvalidLength = errors.New("Input length unexpected")
 
 // When generating a Key, the Issuer must be set.
 var ErrGenerateMissingIssuer = errors.New("Issuer must be set")

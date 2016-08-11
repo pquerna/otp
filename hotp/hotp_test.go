@@ -86,7 +86,7 @@ func TestValidateInvalid(t *testing.T) {
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
 		})
-	require.Equal(t, otp.ErrValidateInputInvalidLength6, err, "Expected Invalid length error.")
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err, "Expected Invalid length error.")
 	require.Equal(t, false, valid, "Valid should be false when we have an error.")
 
 	valid, err = ValidateCustom("foo", 11, secSha1,
@@ -94,7 +94,7 @@ func TestValidateInvalid(t *testing.T) {
 			Digits:    otp.DigitsEight,
 			Algorithm: otp.AlgorithmSHA1,
 		})
-	require.Equal(t, otp.ErrValidateInputInvalidLength8, err, "Expected Invalid length error.")
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err, "Expected Invalid length error.")
 	require.Equal(t, false, valid, "Valid should be false when we have an error.")
 
 	valid, err = ValidateCustom("000000", 11, secSha1,
