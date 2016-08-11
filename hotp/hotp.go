@@ -111,17 +111,8 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
 	passcode = strings.TrimSpace(passcode)
 
-	switch opts.Digits {
-	case otp.DigitsSix:
-		if len(passcode) != 6 {
-			return false, otp.ErrValidateInputInvalidLength6
-		}
-	case otp.DigitsEight:
-		if len(passcode) != 8 {
-			return false, otp.ErrValidateInputInvalidLength8
-		}
-	default:
-		panic("unsupported Digits value.")
+	if len(passcode) != opts.Digits.Length() {
+		return false, otp.ErrValidateInputInvalidLength
 	}
 
 	otpstr, err := GenerateCodeCustom(secret, counter, opts)

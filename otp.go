@@ -36,11 +36,8 @@ import (
 // Error when attempting to convert the secret from base32 to raw bytes.
 var ErrValidateSecretInvalidBase32 = errors.New("Decoding of secret as base32 failed.")
 
-// The user provided passcode was not 6 characters as expected.
-var ErrValidateInputInvalidLength6 = errors.New("Input was not 6 characters")
-
-// The user provided passcode was not 8 characters as expected.
-var ErrValidateInputInvalidLength8 = errors.New("Input was not 8 characters")
+// The user provided passcode length was not expected.
+var ErrValidateInputInvalidLength = errors.New("Input length unexpected")
 
 // When generating a Key, the Issuer must be set.
 var ErrGenerateMissingIssuer = errors.New("Issuer must be set")
@@ -183,38 +180,21 @@ func (a Algorithm) Hash() hash.Hash {
 type Digits int
 
 const (
-	DigitsSix Digits = iota
-	DigitsEight
+	DigitsSix   Digits = 6
+	DigitsEight Digits = 8
 )
 
 // Format converts an integer into the zero-filled size for this Digits.
 func (d Digits) Format(in int32) string {
-	switch d {
-	case DigitsSix:
-		return fmt.Sprintf("%06d", in)
-	case DigitsEight:
-		return fmt.Sprintf("%08d", in)
-	}
-	panic("unreached")
+	f := fmt.Sprintf("%%0%dd", d)
+	return fmt.Sprintf(f, in)
 }
 
 // Length returns the number of characters for this Digits.
 func (d Digits) Length() int {
-	switch d {
-	case DigitsSix:
-		return 6
-	case DigitsEight:
-		return 8
-	}
-	panic("unreached")
+	return int(d)
 }
 
 func (d Digits) String() string {
-	switch d {
-	case DigitsSix:
-		return "6"
-	case DigitsEight:
-		return "8"
-	}
-	panic("unreached")
+	return fmt.Sprintf("%d", d)
 }
