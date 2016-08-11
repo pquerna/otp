@@ -183,19 +183,14 @@ func (a Algorithm) Hash() hash.Hash {
 type Digits int
 
 const (
-	DigitsSix Digits = iota
-	DigitsEight
+	DigitsSix   Digits = 6
+	DigitsEight Digits = 8
 )
 
 // Format converts an integer into the zero-filled size for this Digits.
 func (d Digits) Format(in int32) string {
-	switch d {
-	case DigitsSix:
-		return fmt.Sprintf("%06d", in)
-	case DigitsEight:
-		return fmt.Sprintf("%08d", in)
-	}
-	panic("unreached")
+	f := fmt.Sprintf("%%0%dd", d)
+	return fmt.Sprintf(f, in)
 }
 
 // Length returns the number of characters for this Digits.
