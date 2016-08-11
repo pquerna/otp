@@ -199,11 +199,5 @@ func (d Digits) Length() int {
 }
 
 func (d Digits) String() string {
-	switch d {
-	case DigitsSix:
-		return "6"
-	case DigitsEight:
-		return "8"
-	}
-	panic("unreached")
+	return fmt.Sprintf("%d", d)
 }
