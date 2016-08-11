@@ -195,13 +195,7 @@ func (d Digits) Format(in int32) string {
 
 // Length returns the number of characters for this Digits.
 func (d Digits) Length() int {
-	switch d {
-	case DigitsSix:
-		return 6
-	case DigitsEight:
-		return 8
-	}
-	panic("unreached")
+	return int(d)
 }
 
 func (d Digits) String() string {
