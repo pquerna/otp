@@ -35,7 +35,7 @@
 //
 //	key, err := totp.Generate(totp.GenerateOpts{
 //			Issuer: "Example.com",
-//			AccountName: "alice@example.com"
+//			AccountName: "alice@example.com",
 //	})
 //
 //	// Convert TOTP key into a QR code encoded as a PNG image.
