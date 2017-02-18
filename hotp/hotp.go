@@ -70,6 +70,12 @@ func GenerateCode(secret string, counter uint64) (string, error) {
 // GenerateCodeCustom uses a counter and secret value and options struct to
 // create a passcode.
 func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passcode string, err error) {
+	// As noted in issue #10 this adds support for TOTP secrets that are
+	// missing their padding.
+	if n := len(secret) % 8; n != 0 {
+		secret = secret + strings.Repeat("=", 8-n)
+	}
+
 	secretBytes, err := base32.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return "", otp.ErrValidateSecretInvalidBase32
