@@ -109,6 +109,17 @@ func TestValidateInvalid(t *testing.T) {
 	require.Equal(t, false, valid, "Valid should be false.")
 }
 
+// This tests for issue #10 - secrets without padding
+func TestValidatePadding(t *testing.T) {
+	valid, err := ValidateCustom("831097", 0, "JBSWY3DPEHPK3PX",
+		ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.NoError(t, err, "Expected no error.")
+	require.Equal(t, true, valid, "Valid should be true.")
+}
+
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
