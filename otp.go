@@ -54,7 +54,7 @@ type Key struct {
 // NewKeyFromURL creates a new Key from an TOTP or HOTP url.
 //
 // The URL format is documented here:
-//   https://code.google.com/p/google-authenticator/wiki/KeyUriFormat
+//   https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 //
 func NewKeyFromURL(orig string) (*Key, error) {
 	u, err := url.Parse(orig)
