@@ -151,4 +151,12 @@ func TestGenerate(t *testing.T) {
 	})
 	require.Equal(t, otp.ErrGenerateMissingAccountName, err, "generate missing account name.")
 	require.Nil(t, k, "key should be nil on error.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		SecretSize:  17, // anything that is not divisable by 5, really
+	})
+	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
+	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 }

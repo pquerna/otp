@@ -171,7 +171,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		return nil, err
 	}
 
-	v.Set("secret", base32.StdEncoding.EncodeToString(secret))
+	v.Set("secret", strings.TrimRight(base32.StdEncoding.EncodeToString(secret), "="))
 	v.Set("issuer", opts.Issuer)
 	v.Set("algorithm", opts.Algorithm.String())
 	v.Set("digits", opts.Digits.String())

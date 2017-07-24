@@ -135,4 +135,12 @@ func TestGenerate(t *testing.T) {
 	})
 	require.NoError(t, err, "generate larger TOTP")
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		SecretSize:  13, // anything that is not divisable by 5, really
+	})
+	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
+	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 }
