@@ -45,3 +45,11 @@ func TestKeyNoIssuer(t *testing.T) {
 	require.Equal(t, "", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@google.com", k.AccountName(), "Extracting Account Name")
 }
+
+func TestKeyWithNewLine(t *testing.T) {
+	w, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP
+`)
+	require.NoError(t, err)
+	sec := w.Secret()
+	require.Equal(t, "JBSWY3DPEHPK3PXP", sec)
+}
