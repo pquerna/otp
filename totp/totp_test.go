@@ -40,24 +40,24 @@ var (
 	secSha512 = base32.StdEncoding.EncodeToString([]byte("1234567890123456789012345678901234567890123456789012345678901234"))
 
 	rfcMatrixTCs = []tc{
-		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{59, "46119246", otp.AlgorithmSHA256, secSha256},
-		tc{59, "90693936", otp.AlgorithmSHA512, secSha512},
-		tc{1111111109, "07081804", otp.AlgorithmSHA1, secSha1},
-		tc{1111111109, "68084774", otp.AlgorithmSHA256, secSha256},
-		tc{1111111109, "25091201", otp.AlgorithmSHA512, secSha512},
-		tc{1111111111, "14050471", otp.AlgorithmSHA1, secSha1},
-		tc{1111111111, "67062674", otp.AlgorithmSHA256, secSha256},
-		tc{1111111111, "99943326", otp.AlgorithmSHA512, secSha512},
-		tc{1234567890, "89005924", otp.AlgorithmSHA1, secSha1},
-		tc{1234567890, "91819424", otp.AlgorithmSHA256, secSha256},
-		tc{1234567890, "93441116", otp.AlgorithmSHA512, secSha512},
-		tc{2000000000, "69279037", otp.AlgorithmSHA1, secSha1},
-		tc{2000000000, "90698825", otp.AlgorithmSHA256, secSha256},
-		tc{2000000000, "38618901", otp.AlgorithmSHA512, secSha512},
-		tc{20000000000, "65353130", otp.AlgorithmSHA1, secSha1},
-		tc{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
-		tc{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
+		{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		{59, "46119246", otp.AlgorithmSHA256, secSha256},
+		{59, "90693936", otp.AlgorithmSHA512, secSha512},
+		{1111111109, "07081804", otp.AlgorithmSHA1, secSha1},
+		{1111111109, "68084774", otp.AlgorithmSHA256, secSha256},
+		{1111111109, "25091201", otp.AlgorithmSHA512, secSha512},
+		{1111111111, "14050471", otp.AlgorithmSHA1, secSha1},
+		{1111111111, "67062674", otp.AlgorithmSHA256, secSha256},
+		{1111111111, "99943326", otp.AlgorithmSHA512, secSha512},
+		{1234567890, "89005924", otp.AlgorithmSHA1, secSha1},
+		{1234567890, "91819424", otp.AlgorithmSHA256, secSha256},
+		{1234567890, "93441116", otp.AlgorithmSHA512, secSha512},
+		{2000000000, "69279037", otp.AlgorithmSHA1, secSha1},
+		{2000000000, "90698825", otp.AlgorithmSHA256, secSha256},
+		{2000000000, "38618901", otp.AlgorithmSHA512, secSha512},
+		{20000000000, "65353130", otp.AlgorithmSHA1, secSha1},
+		{20000000000, "77737706", otp.AlgorithmSHA256, secSha256},
+		{20000000000, "47863826", otp.AlgorithmSHA512, secSha512},
 	}
 )
 
@@ -99,9 +99,9 @@ func TestValidateSkew(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
 	tests := []tc{
-		tc{29, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{59, "94287082", otp.AlgorithmSHA1, secSha1},
-		tc{61, "94287082", otp.AlgorithmSHA1, secSha1},
+		{29, "94287082", otp.AlgorithmSHA1, secSha1},
+		{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		{61, "94287082", otp.AlgorithmSHA1, secSha1},
 	}
 
 	for _, tx := range tests {
