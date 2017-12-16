@@ -144,3 +144,17 @@ func TestGenerate(t *testing.T) {
 	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 }
+
+func TestGoogleLowerCaseSecret(t *testing.T) {
+	w, err := otp.NewKeyFromURL(`otpauth://totp/Google%3Afoo%40example.com?secret=qlt6vmy6svfx4bt4rpmisaiyol6hihca&issuer=Google`)
+	require.NoError(t, err)
+	sec := w.Secret()
+	require.Equal(t, "qlt6vmy6svfx4bt4rpmisaiyol6hihca", sec)
+
+	n := time.Now().UTC()
+	code, err := GenerateCode(w.Secret(), n)
+	require.NoError(t, err)
+
+	valid := Validate(code, w.Secret())
+	require.True(t, valid)
+}
