@@ -120,6 +120,16 @@ func TestValidatePadding(t *testing.T) {
 	require.Equal(t, true, valid, "Valid should be true.")
 }
 
+func TestValidateLowerCaseSecret(t *testing.T) {
+	valid, err := ValidateCustom("831097", 0, "jbswy3dpehpk3px",
+		ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		})
+	require.NoError(t, err, "Expected no error.")
+	require.Equal(t, true, valid, "Valid should be true.")
+}
+
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
