@@ -70,12 +70,7 @@ func GenerateCode(secret string, counter uint64) (string, error) {
 // GenerateCodeCustom uses a counter and secret value and options struct to
 // create a passcode.
 func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passcode string, err error) {
-	// As noted in issue #10 and #17 this adds support for TOTP secrets that are
-	// missing their padding.
 	secret = strings.TrimSpace(secret)
-	if n := len(secret) % 8; n != 0 {
-		secret = secret + strings.Repeat("=", 8-n)
-	}
 
 	// As noted in issue #24 Google has started producing base32 in lower case,
 	// but the StdEncoding (and the RFC), expect a dictionary of only upper case letters.
