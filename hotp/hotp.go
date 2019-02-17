@@ -81,7 +81,7 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 	// but the StdEncoding (and the RFC), expect a dictionary of only upper case letters.
 	secret = strings.ToUpper(secret)
 
-	secretBytes, err := base32.StdEncoding.DecodeString(secret)
+	secretBytes, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(secret)
 	if err != nil {
 		return "", otp.ErrValidateSecretInvalidBase32
 	}
@@ -180,7 +180,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		return nil, err
 	}
 
-	v.Set("secret", strings.TrimRight(base32.StdEncoding.EncodeToString(secret), "="))
+	v.Set("secret", base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(secret))
 	v.Set("issuer", opts.Issuer)
 	v.Set("algorithm", opts.Algorithm.String())
 	v.Set("digits", opts.Digits.String())

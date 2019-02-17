@@ -34,7 +34,7 @@ type tc struct {
 }
 
 var (
-	secSha1 = base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+	secSha1 = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString([]byte("12345678901234567890"))
 
 	rfcMatrixTCs = []tc{
 		{0, "755224", otp.AlgorithmSHA1, secSha1},
@@ -79,7 +79,7 @@ func TestGenerateRFCMatrix(t *testing.T) {
 }
 
 func TestValidateInvalid(t *testing.T) {
-	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+	secSha1 := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString([]byte("12345678901234567890"))
 
 	valid, err := ValidateCustom("foo", 11, secSha1,
 		ValidateOpts{
