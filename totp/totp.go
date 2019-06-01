@@ -18,8 +18,6 @@
 package totp
 
 import (
-	"strings"
-
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/hotp"
 
@@ -144,6 +142,8 @@ type GenerateOpts struct {
 	Algorithm otp.Algorithm
 }
 
+var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
+
 // Generate a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
@@ -176,7 +176,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		return nil, err
 	}
 
-	v.Set("secret", strings.TrimRight(base32.StdEncoding.EncodeToString(secret), "="))
+	v.Set("secret", b32NoPadding.EncodeToString(secret))
 	v.Set("issuer", opts.Issuer)
 	v.Set("period", strconv.FormatUint(uint64(opts.Period), 10))
 	v.Set("algorithm", opts.Algorithm.String())
