@@ -169,4 +169,14 @@ func TestGenerate(t *testing.T) {
 	})
 	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		Secret:      []byte("helloworld"),
+	})
+	require.NoError(t, err, "Secret generation failed")
+	sec, err := b32NoPadding.DecodeString(k.Secret())
+	require.NoError(t, err, "Secret wa not valid base32")
+	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
 }
