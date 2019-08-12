@@ -21,7 +21,7 @@ func (v *Validator) Validate() bool {
 	if err != nil {
 		return false
 	}
-	if uint64(v.Token.Use) <= v.Counter {
+	if uint64(v.Token.Use) < v.Counter {
 		return false
 	}
 	return true
