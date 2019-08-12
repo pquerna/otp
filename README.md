@@ -16,6 +16,7 @@ Because TOTP is standardized and widely deployed, there are many [mobile clients
 * Time-based One-time Password Algorithm (TOTP) (RFC 6238): Time based OTP, the most commonly used method.
 * HMAC-based One-time Password Algorithm (HOTP) (RFC 4226): Counter based OTP, which TOTP is based upon.
 * Generation and Validation of codes for either algorithm.
+* Yubikey(Yubico OTP)
 
 ## Implementing TOTP in your application:
 
@@ -50,6 +51,20 @@ For an example of a working enrollment work flow, [Github has documented theirs]
 When a user loses access to their TOTP device, they would no longer have access to their account.  Because TOTPs are often configured on mobile devices that can be lost, stolen or damaged, this is a common problem. For this reason many providers give their users "backup codes" or "recovery codes".  These are a set of one time use codes that can be used instead of the TOTP.  These can simply be randomly generated strings that you store in your backend.  [Github's documentation provides an overview of the user experience](
 https://help.github.com/articles/downloading-your-two-factor-authentication-recovery-codes/).
 
+## Implementing Yubikey
+
+### Yubico Personalization Tool
+
+1. Option `Settings`->`Restore Defaults`.
+2. Option `Settings`->`Log configuration output` setting to Yubico format.
+3. Option `Yubico OTP`->Click on `Advanced`, select `Configuration Slot1`, click on `Generate` buttons separately to generate a new Public/Private Identity and a new Secret Key.
+4. Option `Yubico OTP`->Click on Write Configuration
+
+### Validation
+
+1. Create a validator. `v:=yubikey.Validator{ Passcode: ..., Counter:  ..., Secret:   ..., }`
+2. Validate. `v.Validate()`
+3. Update server counter after validation is successful. `newCounter:=v.Token.Use`
 
 ## Improvements, bugs, adding feature, etc:
 
