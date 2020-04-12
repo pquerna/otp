@@ -31,6 +31,7 @@ import (
 	"image"
 	"net/url"
 	"strings"
+	"strconv"
 )
 
 // Error when attempting to convert the secret from base32 to raw bytes.
