@@ -75,7 +75,7 @@ func main() {
 		println("Valid passcode!")
 		os.Exit(0)
 	} else {
-		println("Invalid passocde!")
+		println("Invalid passcode!")
 		os.Exit(1)
 	}
 }
