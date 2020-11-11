@@ -161,6 +161,9 @@ func (k *Key) URL() string {
 type Algorithm int
 
 const (
+	// AlgorithmSHA1 should be used for compatibility with Google Authenticator.
+	//
+	// See https://github.com/pquerna/otp/issues/55 for additional details.
 	AlgorithmSHA1 Algorithm = iota
 	AlgorithmSHA256
 	AlgorithmSHA512
