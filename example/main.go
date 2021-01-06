@@ -31,7 +31,7 @@ func promptForPasscode() string {
 	return text
 }
 
-// Demo function, not used in main
+
 // Generates Passcode using a UTF-8 (not base32) secret and custom paramters
 func GeneratePassCode(secret string) string{
         passcode, err := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
