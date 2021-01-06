@@ -23,6 +23,7 @@ CMD [ "bash" ]
 
 # App
 FROM scratch as app
+ENV GENERATE_TEMP_PASSCODE=""
 COPY --from=build /build/dist/main /
 
 ENTRYPOINT ["/main"]

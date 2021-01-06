@@ -6,7 +6,6 @@ import (
 
 	"bufio"
 	"bytes"
-	"encoding/base32"
 	"fmt"
 	"image/png"
 	"io/ioutil"
@@ -34,13 +33,12 @@ func promptForPasscode() string {
 
 // Demo function, not used in main
 // Generates Passcode using a UTF-8 (not base32) secret and custom paramters
-func GeneratePassCode(utf8string string) string{
-        secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
+func GeneratePassCode(secret string) string{
         passcode, err := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
                 Period:    30,
                 Skew:      1,
                 Digits:    otp.DigitsSix,
-                Algorithm: otp.AlgorithmSHA512,
+                Algorithm: otp.AlgorithmSHA1,
         })
         if err != nil {
                 panic(err)
@@ -66,6 +64,14 @@ func main() {
 
 	// display the QR code to the user.
 	display(key, buf.Bytes())
+
+	// Generate temporary passcode
+	generateTempPasscode := os.Getenv("GENERATE_TEMP_PASSCODE")
+	if generateTempPasscode == "true" {
+		fmt.Println("Generating temporary passcode, valid for 30 seconds...")
+		tempPasscode := GeneratePassCode(key.Secret())
+		fmt.Printf("Temp Passcode: %s\n", tempPasscode)
+	}
 
 	// Now Validate that the user's successfully added the passcode.
 	fmt.Println("Validating TOTP...")
