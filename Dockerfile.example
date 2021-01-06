@@ -1,0 +1,28 @@
+# Build
+FROM golang:1.12-alpine3.11 AS build
+
+RUN apk add --no-cache git bash
+
+ARG SRC_DIR="example"
+ENV \
+  GO111MODULE=on \
+  CGO_ENABLED=0 \
+  GOOS=linux \
+  GOARCH=amd64
+
+WORKDIR /build/
+
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+
+RUN go build -o dist/main /build/${SRC_DIR}
+CMD [ "bash" ]
+
+
+# App
+FROM scratch as app
+COPY --from=build /build/dist/main /
+
+ENTRYPOINT ["/main"]
