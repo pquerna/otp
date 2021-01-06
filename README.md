@@ -17,6 +17,14 @@ Because TOTP is standardized and widely deployed, there are many [mobile clients
 * HMAC-based One-time Password Algorithm (HOTP) (RFC 4226): Counter based OTP, which TOTP is based upon.
 * Generation and Validation of codes for either algorithm.
 
+## Example
+
+Run the [example](./example) in a [Docker](https://docs.docker.com/get-docker/) container
+
+```bash
+$ docker run --rm -it -e GENERATE_TEMP_PASSCODE="true" unfor19/totp:latest
+```
+
 ## Implementing TOTP in your application:
 
 ### User Enrollment
