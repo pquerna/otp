@@ -20,8 +20,6 @@ package hotp
 import (
 	"io"
 
-	"github.com/pquerna/otp"
-
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/subtle"
@@ -31,6 +29,8 @@ import (
 	"math"
 	"net/url"
 	"strings"
+
+	"github.com/pquerna/otp"
 )
 
 const debug = false
