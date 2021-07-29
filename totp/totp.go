@@ -34,14 +34,12 @@ import (
 // Validate a TOTP using the current time.
 // A shortcut for ValidateCustom, Validate uses a configuration
 // that is compatible with Google-Authenticator and most clients.
-func Validate(passcode string, secret string) bool {
+func Validate(passcode string, secret string, validateOpts ...ValidateOpt) bool {
 	rv, _ := ValidateCustom(
 		passcode,
 		secret,
 		time.Now().UTC(),
-		WithAlgorithm(otp.AlgorithmSHA1),
-		WithDigits(otp.DigitsSix),
-		WithPeriod(30), WithSkew(1),
+		validateOpts...,
 	)
 	return rv
 }
@@ -71,6 +69,18 @@ type ValidateOpts struct {
 	Digits otp.Digits
 	// Algorithm to use for HMAC. Defaults to SHA1.
 	Algorithm otp.Algorithm
+}
+
+func (opts *ValidateOpts) defaultOpts() {
+	if opts.Skew == 0 {
+		opts.Skew = 30
+	}
+	if opts.Digits == 0 {
+		opts.Digits = otp.DigitsSix
+	}
+	if opts.Period == 0 {
+		opts.Period = 30
+	}
 }
 
 type ValidateOpt func(opt *ValidateOpts)
@@ -108,10 +118,8 @@ func GenerateCodeCustom(secret string, t time.Time, validateOpts ...ValidateOpt)
 	for _, opt := range validateOpts {
 		opt(opts)
 	}
+	opts.defaultOpts()
 
-	if opts.Period == 0 {
-		opts.Period = 30
-	}
 	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
 	passcode, err = hotp.GenerateCodeCustom(secret, counter, hotp.ValidateOpts{
 		Digits:    opts.Digits,
@@ -132,9 +140,7 @@ func ValidateCustom(passcode string, secret string, t time.Time, validateOpts ..
 	for _, opt := range validateOpts {
 		opt(opts)
 	}
-	if opts.Period == 0 {
-		opts.Period = 30
-	}
+	opts.defaultOpts()
 
 	counters := []uint64{}
 	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
