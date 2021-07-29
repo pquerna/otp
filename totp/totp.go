@@ -18,9 +18,10 @@
 package totp
 
 import (
+	"io"
+
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/hotp"
-	"io"
 
 	"crypto/rand"
 	"encoding/base32"
@@ -38,12 +39,9 @@ func Validate(passcode string, secret string) bool {
 		passcode,
 		secret,
 		time.Now().UTC(),
-		ValidateOpts{
-			Period:    30,
-			Skew:      1,
-			Digits:    otp.DigitsSix,
-			Algorithm: otp.AlgorithmSHA1,
-		},
+		WithAlgorithm(otp.AlgorithmSHA1),
+		WithDigits(otp.DigitsSix),
+		WithPeriod(30), WithSkew(1),
 	)
 	return rv
 }
@@ -52,12 +50,13 @@ func Validate(passcode string, secret string) bool {
 // A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
 // that is compatible with Google-Authenticator and most clients.
 func GenerateCode(secret string, t time.Time) (string, error) {
-	return GenerateCodeCustom(secret, t, ValidateOpts{
-		Period:    30,
-		Skew:      1,
-		Digits:    otp.DigitsSix,
-		Algorithm: otp.AlgorithmSHA1,
-	})
+	return GenerateCodeCustom(secret,
+		t,
+		WithDigits(otp.DigitsSix),
+		WithSkew(1),
+		WithAlgorithm(otp.AlgorithmSHA1),
+		WithPeriod(30),
+	)
 }
 
 // ValidateOpts provides options for ValidateCustom().
@@ -74,10 +73,42 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
+type ValidateOpt func(opt *ValidateOpts)
+
+func WithPeriod(period uint) ValidateOpt {
+	return func(opt *ValidateOpts) {
+		opt.Period = period
+	}
+}
+func WithSkew(skew uint) ValidateOpt {
+	return func(opt *ValidateOpts) {
+		opt.Skew = skew
+	}
+}
+
+func WithDigits(digits otp.Digits) ValidateOpt {
+	return func(opt *ValidateOpts) {
+		opt.Digits = digits
+	}
+}
+
+func WithAlgorithm(algo otp.Algorithm) ValidateOpt {
+	return func(opt *ValidateOpts) {
+		opt.Algorithm = algo
+	}
+}
+
 // GenerateCodeCustom takes a timepoint and produces a passcode using a
 // secret and the provided opts. (Under the hood, this is making an adapted
 // call to hotp.GenerateCodeCustom)
-func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode string, err error) {
+func GenerateCodeCustom(secret string, t time.Time, validateOpts ...ValidateOpt) (passcode string, err error) {
+
+	opts := new(ValidateOpts)
+
+	for _, opt := range validateOpts {
+		opt(opts)
+	}
+
 	if opts.Period == 0 {
 		opts.Period = 30
 	}
@@ -94,7 +125,13 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 
 // ValidateCustom validates a TOTP given a user specified time and custom options.
 // Most users should use Validate() to provide an interpolatable TOTP experience.
-func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
+func ValidateCustom(passcode string, secret string, t time.Time, validateOpts ...ValidateOpt) (bool, error) {
+
+	opts := new(ValidateOpts)
+
+	for _, opt := range validateOpts {
+		opt(opts)
+	}
 	if opts.Period == 0 {
 		opts.Period = 30
 	}

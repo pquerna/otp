@@ -72,10 +72,7 @@ var (
 func TestValidateRFCMatrix(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
-			ValidateOpts{
-				Digits:    otp.DigitsEight,
-				Algorithm: tx.Mode,
-			})
+			WithDigits(otp.DigitsEight), WithAlgorithm(tx.Mode))
 		require.NoError(t, err,
 			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
 		require.True(t, valid,
@@ -85,11 +82,9 @@ func TestValidateRFCMatrix(t *testing.T) {
 
 func TestGenerateRFCTCs(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
-		passcode, err := GenerateCodeCustom(tx.Secret, time.Unix(tx.TS, 0).UTC(),
-			ValidateOpts{
-				Digits:    otp.DigitsEight,
-				Algorithm: tx.Mode,
-			})
+		passcode, err := GenerateCodeCustom(tx.Secret,
+			time.Unix(tx.TS, 0).UTC(),
+			WithAlgorithm(tx.Mode), WithDigits(otp.DigitsSix))
 		assert.Nil(t, err)
 		assert.Equal(t, tx.TOTP, passcode)
 	}
@@ -106,11 +101,7 @@ func TestValidateSkew(t *testing.T) {
 
 	for _, tx := range tests {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
-			ValidateOpts{
-				Digits:    otp.DigitsEight,
-				Algorithm: tx.Mode,
-				Skew:      1,
-			})
+			WithDigits(otp.DigitsEight), WithAlgorithm(tx.Mode), WithSkew(1))
 		require.NoError(t, err,
 			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
 		require.True(t, valid,

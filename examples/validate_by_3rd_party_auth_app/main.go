@@ -34,18 +34,15 @@ func promptForPasscode() string {
 
 // Demo function, not used in main
 // Generates Passcode using a UTF-8 (not base32) secret and custom paramters
-func GeneratePassCode(utf8string string) string{
-        secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
-        passcode, err := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
-                Period:    30,
-                Skew:      1,
-                Digits:    otp.DigitsSix,
-                Algorithm: otp.AlgorithmSHA512,
-        })
-        if err != nil {
-                panic(err)
-        }
-        return passcode
+func GeneratePassCode(utf8string string) string {
+	secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
+	passcode, err := totp.GenerateCodeCustom(secret, time.Now(),
+		totp.WithAlgorithm(otp.AlgorithmSHA512), totp.WithDigits(otp.DigitsSix),
+		totp.WithPeriod(30), totp.WithSkew(30))
+	if err != nil {
+		panic(err)
+	}
+	return passcode
 }
 
 func main() {
@@ -69,6 +66,7 @@ func main() {
 
 	// Now Validate that the user's successfully added the passcode.
 	fmt.Println("Validating TOTP...")
+	fmt.Println("Scan the generated QR code and enter the generated number below")
 	passcode := promptForPasscode()
 	valid := totp.Validate(passcode, key.Secret())
 	if valid {
