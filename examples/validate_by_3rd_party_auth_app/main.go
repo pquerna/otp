@@ -46,10 +46,10 @@ func GeneratePassCode(utf8string string) string {
 }
 
 func main() {
-	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "Example.com",
-		AccountName: "alice@example.com",
-	})
+	key, err := totp.Generate(
+		totp.WithIssuer("Example.com"),
+		totp.WithAccountName("alice@example.com"),
+	)
 	if err != nil {
 		panic(err)
 	}

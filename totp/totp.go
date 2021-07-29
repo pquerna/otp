@@ -190,17 +190,13 @@ type GenerateOpts struct {
 	Rand io.Reader
 }
 
-var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
-
-// Generate a new TOTP Key.
-func Generate(opts GenerateOpts) (*otp.Key, error) {
-	// url encode the Issuer/AccountName
+func (opts *GenerateOpts) defaults() error {
 	if opts.Issuer == "" {
-		return nil, otp.ErrGenerateMissingIssuer
+		return otp.ErrGenerateMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, otp.ErrGenerateMissingAccountName
+		return otp.ErrGenerateMissingAccountName
 	}
 
 	if opts.Period == 0 {
@@ -218,7 +214,73 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	if opts.Rand == nil {
 		opts.Rand = rand.Reader
 	}
+	return nil
+}
 
+type GenerateOpt func(opts *GenerateOpts)
+
+func WithIssuer(issuer string) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.Issuer = issuer
+	}
+}
+
+func WithAccountName(account string) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.AccountName = account
+	}
+}
+
+func WithGenPeriod(period uint) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.Period = period
+	}
+}
+func WithSecret(secret []byte) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.Secret = secret
+	}
+}
+
+func WithGenDigits(digits otp.Digits) GenerateOpt {
+
+	return func(opts *GenerateOpts) {
+		opts.Digits = digits
+	}
+}
+
+func WithGenAlgorithm(algo otp.Algorithm) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.Algorithm = algo
+	}
+}
+
+func WithRandomGenerator(r io.Reader) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.Rand = r
+	}
+}
+
+func WithSecretSize(size uint) GenerateOpt {
+	return func(opts *GenerateOpts) {
+		opts.SecretSize = size
+	}
+}
+
+var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
+
+// Generate a new TOTP Key.
+func Generate(genOpts ...GenerateOpt) (*otp.Key, error) {
+
+	opts := new(GenerateOpts)
+
+	for _, opt := range genOpts {
+		opt(opts)
+	}
+
+	if err := opts.defaults(); err != nil {
+		return nil, err
+	}
 	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
 
 	v := url.Values{}
