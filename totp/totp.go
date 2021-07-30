@@ -34,12 +34,17 @@ import (
 // Validate a TOTP using the current time.
 // A shortcut for ValidateCustom, Validate uses a configuration
 // that is compatible with Google-Authenticator and most clients.
-func Validate(passcode string, secret string, validateOpts ...ValidateOpt) bool {
+func Validate(passcode string, secret string) bool {
 	rv, _ := ValidateCustom(
 		passcode,
 		secret,
 		time.Now().UTC(),
-		validateOpts...,
+		ValidateOpts{
+			Period:    30,
+			Skew:      1,
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmSHA1,
+		},
 	)
 	return rv
 }
@@ -49,13 +54,12 @@ func Validate(passcode string, secret string, validateOpts ...ValidateOpt) bool 
 // A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
 // that is compatible with Google-Authenticator and most clients.
 func GenerateCode(secret string, t time.Time) (string, error) {
-	return GenerateCodeCustom(secret,
-		t,
-		WithDigits(otp.DigitsSix),
-		WithSkew(1),
-		WithAlgorithm(otp.AlgorithmSHA1),
-		WithPeriod(30),
-	)
+	return GenerateCodeCustom(secret, t, ValidateOpts{
+		Period:    30,
+		Skew:      1,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
 }
 
 // ValidateOpts provides options for ValidateCustom().
@@ -157,23 +161,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	if err := opts.defaults(); err != nil {
 		return nil, err
 	}
-	return nil
-}
 
-var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
-
-// Generate a new TOTP Key.
-func Generate(genOpts ...GenerateOpt) (*otp.Key, error) {
-
-	opts := new(GenerateOpts)
-
-	for _, opt := range genOpts {
-		opt(opts)
-	}
-
-	if err := opts.defaults(); err != nil {
-		return nil, err
-	}
 	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
 
 	v := url.Values{}
