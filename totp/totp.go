@@ -18,11 +18,11 @@
 package totp
 
 import (
-	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/hotp"
 	"io"
 
-	"crypto/rand"
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/hotp"
+
 	"encoding/base32"
 	"math"
 	"net/url"
@@ -30,6 +30,7 @@ import (
 	"time"
 )
 
+// Deprecated
 // Validate a TOTP using the current time.
 // A shortcut for ValidateCustom, Validate uses a configuration
 // that is compatible with Google-Authenticator and most clients.
@@ -48,6 +49,7 @@ func Validate(passcode string, secret string) bool {
 	return rv
 }
 
+// Deprecated
 // GenerateCode creates a TOTP token using the current time.
 // A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
 // that is compatible with Google-Authenticator and most clients.
@@ -74,13 +76,14 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
+// Deprecated
 // GenerateCodeCustom takes a timepoint and produces a passcode using a
 // secret and the provided opts. (Under the hood, this is making an adapted
 // call to hotp.GenerateCodeCustom)
 func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode string, err error) {
-	if opts.Period == 0 {
-		opts.Period = 30
-	}
+
+	opts.defaultOpts()
+
 	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
 	passcode, err = hotp.GenerateCodeCustom(secret, counter, hotp.ValidateOpts{
 		Digits:    opts.Digits,
@@ -92,12 +95,12 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 	return passcode, nil
 }
 
+// Deprecated
 // ValidateCustom validates a TOTP given a user specified time and custom options.
 // Most users should use Validate() to provide an interpolatable TOTP experience.
 func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
-	if opts.Period == 0 {
-		opts.Period = 30
-	}
+
+	opts.defaultOpts()
 
 	counters := []uint64{}
 	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
@@ -109,6 +112,7 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 	}
 
 	for _, counter := range counters {
+
 		rv, err := hotp.ValidateCustom(passcode, counter, secret, hotp.ValidateOpts{
 			Digits:    opts.Digits,
 			Algorithm: opts.Algorithm,
@@ -118,7 +122,7 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 			return false, err
 		}
 
-		if rv == true {
+		if rv {
 			return true, nil
 		}
 	}
@@ -149,31 +153,13 @@ type GenerateOpts struct {
 
 var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
+// Deprecated
 // Generate a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
-	if opts.Issuer == "" {
-		return nil, otp.ErrGenerateMissingIssuer
-	}
 
-	if opts.AccountName == "" {
-		return nil, otp.ErrGenerateMissingAccountName
-	}
-
-	if opts.Period == 0 {
-		opts.Period = 30
-	}
-
-	if opts.SecretSize == 0 {
-		opts.SecretSize = 20
-	}
-
-	if opts.Digits == 0 {
-		opts.Digits = otp.DigitsSix
-	}
-
-	if opts.Rand == nil {
-		opts.Rand = rand.Reader
+	if err := opts.defaults(); err != nil {
+		return nil, err
 	}
 
 	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example

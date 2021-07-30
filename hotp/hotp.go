@@ -18,8 +18,9 @@
 package hotp
 
 import (
-	"github.com/pquerna/otp"
 	"io"
+
+	"github.com/pquerna/otp"
 
 	"crypto/hmac"
 	"crypto/rand"
@@ -60,7 +61,7 @@ type ValidateOpts struct {
 
 // GenerateCode creates a HOTP passcode given a counter and secret.
 // This is a shortcut for GenerateCodeCustom, with parameters that
-// are compataible with Google-Authenticator.
+// are compatible with Google-Authenticator.
 func GenerateCode(secret string, counter uint64) (string, error) {
 	return GenerateCodeCustom(secret, counter, ValidateOpts{
 		Digits:    otp.DigitsSix,
@@ -101,6 +102,7 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 	// "Dynamic truncation" in RFC 4226
 	// http://tools.ietf.org/html/rfc4226#section-5.4
 	offset := sum[len(sum)-1] & 0xf
+
 	value := int64(((int(sum[offset]) & 0x7f) << 24) |
 		((int(sum[offset+1] & 0xff)) << 16) |
 		((int(sum[offset+2] & 0xff)) << 8) |
