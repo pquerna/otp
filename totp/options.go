@@ -2,6 +2,7 @@ package totp
 
 import (
 	"io"
+	"time"
 
 	"github.com/pquerna/otp"
 )
@@ -81,5 +82,11 @@ func WithDigits(digits otp.Digits) ValidateOpt {
 func WithAlgorithm(algo otp.Algorithm) ValidateOpt {
 	return func(opt *ValidateOpts) {
 		opt.Algorithm = algo
+	}
+}
+
+func WithTime(t time.Time) ValidateOpt {
+	return func(opt *ValidateOpts) {
+		opt.t = t
 	}
 }

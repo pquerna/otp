@@ -74,6 +74,10 @@ type ValidateOpts struct {
 	Digits otp.Digits
 	// Algorithm to use for HMAC. Defaults to SHA1.
 	Algorithm otp.Algorithm
+	// the time in which we would like to validate our code
+	// in the normal usage, it is equal to current time : time.Now()
+	// but for testing puposes, it could be changed to a later/future time
+	t time.Time
 }
 
 // Deprecated

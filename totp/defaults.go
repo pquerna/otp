@@ -2,6 +2,7 @@ package totp
 
 import (
 	"crypto/rand"
+	"time"
 
 	"github.com/pquerna/otp"
 )
@@ -34,7 +35,7 @@ func (opts *GenerateOpts) defaults() error {
 	return nil
 }
 
-//
+// defaultOpts sets default opts
 func (opts *ValidateOpts) defaultOpts() {
 	if opts.Skew == 0 {
 		opts.Skew = 1
@@ -44,5 +45,8 @@ func (opts *ValidateOpts) defaultOpts() {
 	}
 	if opts.Period == 0 {
 		opts.Period = 30
+	}
+	if opts.t.IsZero() {
+		opts.t = time.Now()
 	}
 }

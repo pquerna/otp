@@ -83,6 +83,20 @@ func TestValidateRFCMatrix(t *testing.T) {
 	}
 }
 
+func TestValidateRFCMatrixV2(t *testing.T) {
+	for _, tx := range rfcMatrixTCs {
+		valid, err := ValidateWithOpts(tx.TOTP, tx.Secret,
+			WithTime(time.Unix(tx.TS, 0).UTC()),
+			WithDigits(otp.DigitsEight),
+			WithAlgorithm(tx.Mode),
+		)
+		require.NoError(t, err,
+			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+		require.True(t, valid,
+			"unexpected totp failure totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+	}
+}
+
 func TestGenerateRFCTCs(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		passcode, err := GenerateCodeCustom(tx.Secret, time.Unix(tx.TS, 0).UTC(),
@@ -94,6 +108,42 @@ func TestGenerateRFCTCs(t *testing.T) {
 		assert.Equal(t, tx.TOTP, passcode)
 	}
 }
+
+func TestGenerateRFCTCsV2(t *testing.T) {
+	for _, tx := range rfcMatrixTCs {
+		passcode, err := GenerateCodeWithOpts(
+			tx.Secret,
+			WithTime(time.Unix(tx.TS, 0).UTC()),
+			WithDigits(otp.DigitsEight),
+			WithAlgorithm(tx.Mode),
+		)
+
+		assert.Nil(t, err)
+		assert.Equal(t, tx.TOTP, passcode)
+	}
+}
+
+func TestValidateSkewV2(t *testing.T) {
+	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+
+	tests := []tc{
+		{29, "94287082", otp.AlgorithmSHA1, secSha1},
+		{59, "94287082", otp.AlgorithmSHA1, secSha1},
+		{61, "94287082", otp.AlgorithmSHA1, secSha1},
+	}
+
+	for _, tx := range tests {
+		valid, err := ValidateWithOpts(tx.TOTP, tx.Secret,
+			WithTime(time.Unix(tx.TS, 0).UTC()),
+			WithDigits(otp.DigitsEight), WithAlgorithm(tx.Mode), WithSkew(1))
+		require.NoError(t, err,
+			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+		require.True(t, valid,
+			"unexpected totp failure totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
+	}
+}
+
+//
 
 func TestValidateSkew(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
@@ -155,6 +205,40 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
 }
 
+func TestGenerateV2(t *testing.T) {
+	k, err := GenerateWithOpts(WithIssuer(
+		"SnakeOil"), WithAccountName("alice@example.com"),
+	)
+	require.NoError(t, err, "generate basic TOTP")
+	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
+	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
+	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
+
+	k, err = GenerateWithOpts(WithIssuer("SnakeOil"),
+		WithAccountName("alice@example.com"),
+		WithSecretSize(20),
+	)
+	require.NoError(t, err, "generate larger TOTP")
+	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
+
+	k, err = GenerateWithOpts(
+		WithIssuer("SnakeOil"),
+		WithAccountName("alice@example.com"),
+		WithSecretSize(13),
+	)
+	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
+	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
+
+	k, err = GenerateWithOpts(
+		WithIssuer("SnakeOil"),
+		WithAccountName("alice@example.com"),
+		WithSecret([]byte("helloworld")),
+	)
+	require.NoError(t, err, "Secret generation failed")
+	sec, err := b32NoPadding.DecodeString(k.Secret())
+	require.NoError(t, err, "Secret wa not valid base32")
+	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
+}
 func TestGoogleLowerCaseSecret(t *testing.T) {
 	w, err := otp.NewKeyFromURL(`otpauth://totp/Google%3Afoo%40example.com?secret=qlt6vmy6svfx4bt4rpmisaiyol6hihca&issuer=Google`)
 	require.NoError(t, err)
