@@ -31,8 +31,6 @@ import (
 	"math"
 	"net/url"
 	"strings"
-
-	"github.com/pquerna/otp"
 )
 
 const debug = false

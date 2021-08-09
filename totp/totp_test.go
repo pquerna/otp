@@ -72,7 +72,10 @@ var (
 func TestValidateRFCMatrix(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
-			WithDigits(otp.DigitsEight), WithAlgorithm(tx.Mode))
+			ValidateOpts{
+				Digits:    otp.DigitsEight,
+				Algorithm: tx.Mode,
+			})
 		require.NoError(t, err,
 			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
 		require.True(t, valid,
@@ -82,9 +85,11 @@ func TestValidateRFCMatrix(t *testing.T) {
 
 func TestGenerateRFCTCs(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
-		passcode, err := GenerateCodeCustom(tx.Secret,
-			time.Unix(tx.TS, 0).UTC(),
-			WithAlgorithm(tx.Mode), WithDigits(otp.DigitsSix))
+		passcode, err := GenerateCodeCustom(tx.Secret, time.Unix(tx.TS, 0).UTC(),
+			ValidateOpts{
+				Digits:    otp.DigitsEight,
+				Algorithm: tx.Mode,
+			})
 		assert.Nil(t, err)
 		assert.Equal(t, tx.TOTP, passcode)
 	}
@@ -101,7 +106,11 @@ func TestValidateSkew(t *testing.T) {
 
 	for _, tx := range tests {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
-			WithDigits(otp.DigitsEight), WithAlgorithm(tx.Mode), WithSkew(1))
+			ValidateOpts{
+				Digits:    otp.DigitsEight,
+				Algorithm: tx.Mode,
+				Skew:      1,
+			})
 		require.NoError(t, err,
 			"unexpected error totp=%s mode=%v ts=%v", tx.TOTP, tx.Mode, tx.TS)
 		require.True(t, valid,
@@ -110,36 +119,36 @@ func TestValidateSkew(t *testing.T) {
 }
 
 func TestGenerate(t *testing.T) {
-	k, err := Generate(
-		WithIssuer("SnakeOil"), WithAccountName("alice@example.com"),
-	)
-
+	k, err := Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+	})
 	require.NoError(t, err, "generate basic TOTP")
 	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
-	k, err = Generate(
-		WithIssuer("SnakeOil"),
-		WithAccountName("alice@example.com"),
-		WithSecretSize(20),
-	)
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		SecretSize:  20,
+	})
 	require.NoError(t, err, "generate larger TOTP")
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
-	k, err = Generate(
-		WithIssuer("SnakeOil"),
-		WithAccountName("alice@example.com"),
-		WithSecretSize(13), // anything that is not divisable by 5, really
-	)
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		SecretSize:  13, // anything that is not divisable by 5, really
+	})
 	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 
-	k, err = Generate(
-		WithIssuer("SnakeOil"),
-		WithAccountName("alice@example.com"),
-		WithSecret([]byte("helloworld")),
-	)
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		Secret:      []byte("helloworld"),
+	})
 	require.NoError(t, err, "Secret generation failed")
 	sec, err := b32NoPadding.DecodeString(k.Secret())
 	require.NoError(t, err, "Secret wa not valid base32")

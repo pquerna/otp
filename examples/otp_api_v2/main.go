@@ -36,7 +36,7 @@ func promptForPasscode() string {
 // Generates Passcode using a UTF-8 (not base32) secret and custom paramters
 func GeneratePassCode(utf8string string) string {
 	secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
-	passcode, err := totp.GenerateCodeCustom(secret, time.Now(),
+	passcode, err := totp.GenerateCodeWithOpts(secret, time.Now(),
 		totp.WithAlgorithm(otp.AlgorithmSHA512), totp.WithDigits(otp.DigitsSix),
 		totp.WithPeriod(30), totp.WithSkew(30))
 	if err != nil {
@@ -46,9 +46,11 @@ func GeneratePassCode(utf8string string) string {
 }
 
 func main() {
-	key, err := totp.Generate(
-		totp.WithIssuer("Example.com"),
-		totp.WithAccountName("alice@example.com"),
+	key, err := totp.GenerateWithOpts(
+		totp.WithIssuer("api.v2.otp"),
+		totp.WithAccountName("bob@example.com"),
+		totp.WithGenDigits(otp.DigitsSix),
+		totp.WithGenPeriod(60),
 	)
 	if err != nil {
 		panic(err)
