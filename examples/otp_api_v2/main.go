@@ -11,7 +11,6 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
-	"time"
 )
 
 func display(key *otp.Key, data []byte) {
@@ -36,7 +35,7 @@ func promptForPasscode() string {
 // Generates Passcode using a UTF-8 (not base32) secret and custom paramters
 func GeneratePassCode(utf8string string) string {
 	secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
-	passcode, err := totp.GenerateCodeWithOpts(secret, time.Now(),
+	passcode, err := totp.GenerateCodeWithOpts(secret,
 		totp.WithAlgorithm(otp.AlgorithmSHA512), totp.WithDigits(otp.DigitsSix),
 		totp.WithPeriod(30), totp.WithSkew(30))
 	if err != nil {
