@@ -1,6 +1,6 @@
 # otp: One Time Password utilities Go / Golang
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/pquerna/otp)](https://pkg.go.dev/github.com/pquerna/otp) [![Build Status](https://travis-ci.org/pquerna/otp.svg?branch=master)](https://travis-ci.org/pquerna/otp) [![codecov](https://codecov.io/gh/d-fal/otp/branch/master/graph/badge.svg?token=X1W4OD9E8T)](https://codecov.io/gh/d-fal/otp)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/pquerna/otp)](https://pkg.go.dev/github.com/pquerna/otp) [![Build Status](https://travis-ci.org/pquerna/otp.svg?branch=master)](https://travis-ci.org/pquerna/otp)
 
 # Why One Time Passwords?
 
@@ -24,7 +24,7 @@ Because TOTP is standardized and widely deployed, there are many [mobile clients
 For an example of a working enrollment work flow, [Github has documented theirs](https://help.github.com/articles/configuring-two-factor-authentication-via-a-totp-mobile-app/
 ),  but the basics are:
 
-1. Generate new TOTP Key for a User. `key,_ := totp.GenerateWithOpts(GenerateOpts...)`.
+1. Generate new TOTP Key for a User. `key,_ := GenerateWithOpts(GenerateOpts...)`.
 ```
     passcode, err := totp.GenerateCodeWithOpts(secret,
         totp.WithAlgorithm(otp.AlgorithmSHA1), 
@@ -34,23 +34,26 @@ For an example of a working enrollment work flow, [Github has documented theirs]
 
 ```
 1. Display the Key's Secret and QR-Code for the User. `key.Secret()` and `key.Image(...)`.
-1. Test that the user can successfully use their TOTP. `totp.ValidateWithOpts(secret,key string,ValidateOpts...)`.
+1. Test that the user can successfully use their TOTP. `ValidateWithOpts(passcode,key string,ValidateOpts...)`.
+```
+valid, err := totp.ValidateWithOpts(passcode, key.Secret(), totp.WithAlgorithm(otp.AlgorithmSHA1))
+
+```
 1. Store TOTP Secret for the User in your backend. `key.Secret()`
 1. Provide the user with "recovery codes". (See Recovery Codes bellow)
 
 ### Code Generation
 
-* In either TOTP or HOTP cases, use the `GenerateCode` function and a counter or
+* In either TOTP or HOTP cases, use the `GenerateCodeWithOpts` function and a counter or
   `time.Time` struct to generate a valid code compatible with most implementations.
-* For uncommon or custom settings, or to catch unlikely errors, use `GenerateCodeCustom`
-  in either module.
+* For uncommon or custom settings, feed this function with validation options `ValidateOpts`.
 
 ### Validation
 
 1. Prompt and validate User's password as normal.
 1. If the user has TOTP enabled, prompt for TOTP passcode.
 1. Retrieve the User's TOTP Secret from your backend.
-1. Validate the user's passcode. `totp.Validate(...)`
+1. Validate the user's passcode.  `ValidateWithOpts(passcode,key string,ValidateOpts...)`
 
 
 ### Recovery Codes
