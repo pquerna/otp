@@ -24,9 +24,17 @@ Because TOTP is standardized and widely deployed, there are many [mobile clients
 For an example of a working enrollment work flow, [Github has documented theirs](https://help.github.com/articles/configuring-two-factor-authentication-via-a-totp-mobile-app/
 ),  but the basics are:
 
-1. Generate new TOTP Key for a User. `key,_ := totp.Generate(...)`.
+1. Generate new TOTP Key for a User. `key,_ := totp.GenerateWithOpts(GenerateOpts...)`.
+```
+    passcode, err := totp.GenerateCodeWithOpts(secret,
+        totp.WithAlgorithm(otp.AlgorithmSHA1), 
+        totp.WithDigits(otp.DigitsSix),
+        totp.WithPeriod(30), totp.WithSkew(30),
+        )
+
+```
 1. Display the Key's Secret and QR-Code for the User. `key.Secret()` and `key.Image(...)`.
-1. Test that the user can successfully use their TOTP. `totp.Validate(...)`.
+1. Test that the user can successfully use their TOTP. `totp.ValidateWithOpts(secret,key string,ValidateOpts...)`.
 1. Store TOTP Secret for the User in your backend. `key.Secret()`
 1. Provide the user with "recovery codes". (See Recovery Codes bellow)
 

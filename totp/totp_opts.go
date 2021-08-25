@@ -57,6 +57,9 @@ func validateCustomOpt(passcode, secret string, validateOpts ...ValidateOpt) (bo
 //
 
 // GenerateWithOpts a new TOTP Key.
+// This func generates *otp.Key with desired GenerateOpts
+// Example usage:
+// GenerateWitOpts(WithAccountName("example account"))
 func GenerateWithOpts(genOpts ...GenerateOpt) (*otp.Key, error) {
 
 	opts := new(GenerateOpts)

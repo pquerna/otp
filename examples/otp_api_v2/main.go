@@ -69,7 +69,11 @@ func main() {
 	fmt.Println("Validating TOTP...")
 	fmt.Println("Scan the generated QR code and enter the generated number below")
 	passcode := promptForPasscode()
-	valid := totp.Validate(passcode, key.Secret())
+	valid, err := totp.ValidateWithOpts(passcode, key.Secret(), totp.WithAlgorithm(otp.AlgorithmSHA1))
+
+	if err != nil {
+		panic(err)
+	}
 	if valid {
 		println("Valid passcode!")
 		os.Exit(0)

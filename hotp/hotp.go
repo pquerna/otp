@@ -19,6 +19,8 @@ package hotp
 
 import (
 	"io"
+	"log"
+	"os"
 
 	"github.com/pquerna/otp"
 
@@ -27,13 +29,13 @@ import (
 	"crypto/subtle"
 	"encoding/base32"
 	"encoding/binary"
-	"fmt"
-	"math"
 	"net/url"
 	"strings"
 )
 
 const debug = false
+
+var dlog = log.New(os.Stdout, "[hotp] ", log.Ltime)
 
 // Validate a HOTP passcode given a counter and secret.
 // This is a shortcut for ValidateCustom, with parameters that
@@ -90,13 +92,18 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 
 	buf := make([]byte, 8)
 	mac := hmac.New(opts.Algorithm.Hash, secretBytes)
+
 	binary.BigEndian.PutUint64(buf, counter)
+
 	if debug {
-		fmt.Printf("counter=%v\n", counter)
-		fmt.Printf("buf=%v\n", buf)
+		dlog.Printf("counter=%v\n", counter)
+		dlog.Printf("buf=%v\n", buf)
 	}
 
-	mac.Write(buf)
+	if _, err := mac.Write(buf); err != nil {
+		return "", err
+	}
+
 	sum := mac.Sum(nil)
 
 	// "Dynamic truncation" in RFC 4226
@@ -108,13 +115,12 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 		((int(sum[offset+2] & 0xff)) << 8) |
 		(int(sum[offset+3]) & 0xff))
 
-	l := opts.Digits.Length()
-	mod := int32(value % int64(math.Pow10(l)))
+	mod := int32(value % int64(opts.Digits.Base()))
 
 	if debug {
-		fmt.Printf("offset=%v\n", offset)
-		fmt.Printf("value=%v\n", value)
-		fmt.Printf("mod'ed=%v\n", mod)
+		dlog.Printf("offset=%v\n", offset)
+		dlog.Printf("value=%v\n", value)
+		dlog.Printf("mod'ed=%v\n", mod)
 	}
 
 	return opts.Digits.Format(mod), nil

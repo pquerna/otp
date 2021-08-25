@@ -31,6 +31,7 @@ import (
 )
 
 // Deprecated
+// use ValidateWithOpts instead
 // Validate a TOTP using the current time.
 // A shortcut for ValidateCustom, Validate uses a configuration
 // that is compatible with Google-Authenticator and most clients.
@@ -50,6 +51,7 @@ func Validate(passcode string, secret string) bool {
 }
 
 // Deprecated
+// use GenerateWithOpts instead
 // GenerateCode creates a TOTP token using the current time.
 // A shortcut for GenerateCodeCustom, GenerateCode uses a configuration
 // that is compatible with Google-Authenticator and most clients.
@@ -100,6 +102,7 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 }
 
 // Deprecated
+// use ValidateWithOpts instead
 // ValidateCustom validates a TOTP given a user specified time and custom options.
 // Most users should use Validate() to provide an interpolatable TOTP experience.
 func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {

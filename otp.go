@@ -209,13 +209,27 @@ const (
 
 // Format converts an integer into the zero-filled size for this Digits.
 func (d Digits) Format(in int32) string {
-	f := fmt.Sprintf("%%0%dd", d)
-	return fmt.Sprintf(f, in)
+	return fmt.Sprintf(fmt.Sprintf("%%0%dd", d), in)
 }
 
 // Length returns the number of characters for this Digits.
 func (d Digits) Length() int {
 	return int(d)
+}
+
+// Base: the numerical base system in which the quotient of dynamic binary value (DBC) should be
+// calculated.
+// for six digit totp it is 10^6 or 1e6
+// for eight digit totp it equals to 10^8, or 1e8
+func (d Digits) Base() int {
+	switch d {
+	case DigitsSix:
+		return 1e6
+	case DigitsEight:
+		return 1e8
+	default:
+		return 1e6
+	}
 }
 
 func (d Digits) String() string {
