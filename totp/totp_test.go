@@ -168,3 +168,15 @@ func TestGoogleLowerCaseSecret(t *testing.T) {
 	valid := Validate(code, w.Secret())
 	require.True(t, valid)
 }
+
+func TestSecretFrom(t *testing.T) {
+	secStr := "12345678"
+	sec := SecretFrom([]byte(secStr))
+
+	n := time.Now().UTC()
+	userInput, err := GenerateCode(sec, n)
+	require.NoError(t, err)
+
+	valid := Validate(userInput, sec)
+	require.True(t, valid)
+}

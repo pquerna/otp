@@ -180,3 +180,14 @@ func TestGenerate(t *testing.T) {
 	require.NoError(t, err, "Secret wa not valid base32")
 	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
 }
+
+func TestSecretFrom(t *testing.T) {
+	secStr := "12345678"
+	sec := SecretFrom([]byte(secStr))
+
+	userInput, err := GenerateCode(sec, 11)
+	require.NoError(t, err)
+
+	valid := Validate(userInput, 11, sec)
+	require.True(t, valid)
+}

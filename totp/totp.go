@@ -149,6 +149,10 @@ type GenerateOpts struct {
 
 var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
+func SecretFrom(secret []byte) string{
+	return b32NoPadding.EncodeToString(secret)
+}
+
 // Generate a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
