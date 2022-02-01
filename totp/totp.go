@@ -18,16 +18,16 @@
 package totp
 
 import (
-	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/hotp"
-	"io"
-
 	"crypto/rand"
 	"encoding/base32"
+	"io"
 	"math"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/hotp"
 )
 
 // Validate a TOTP using the current time.
@@ -118,7 +118,7 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 			return false, err
 		}
 
-		if rv == true {
+		if rv {
 			return true, nil
 		}
 	}
@@ -137,7 +137,7 @@ type GenerateOpts struct {
 	Period uint
 	// Size in size of the generated Secret. Defaults to 20 bytes.
 	SecretSize uint
-	// Secret to store. Defaults to a randomly generated secret of SecretSize.  You should generally leave this empty.
+	// Secret to store. Defaults to a randomly generated secret of SecretSize. You should generally leave this empty.
 	Secret []byte
 	// Digits to request. Defaults to 6.
 	Digits otp.Digits

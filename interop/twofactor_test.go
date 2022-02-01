@@ -21,9 +21,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gokyle/twofactor"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+
+	"github.com/gokyle/twofactor"
 	"github.com/stretchr/testify/require"
 )
 

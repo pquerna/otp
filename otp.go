@@ -18,9 +18,6 @@
 package otp
 
 import (
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
-
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -30,21 +27,24 @@ import (
 	"hash"
 	"image"
 	"net/url"
-	"strings"
 	"strconv"
+	"strings"
+
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/qr"
 )
 
 // Error when attempting to convert the secret from base32 to raw bytes.
-var ErrValidateSecretInvalidBase32 = errors.New("Decoding of secret as base32 failed.")
+var ErrValidateSecretInvalidBase32 = errors.New("decoding of secret as base32 failed")
 
 // The user provided passcode length was not expected.
-var ErrValidateInputInvalidLength = errors.New("Input length unexpected")
+var ErrValidateInputInvalidLength = errors.New("unexpected input length")
 
 // When generating a Key, the Issuer must be set.
-var ErrGenerateMissingIssuer = errors.New("Issuer must be set")
+var ErrGenerateMissingIssuer = errors.New("issuer is empty")
 
 // When generating a Key, the Account Name must be set.
-var ErrGenerateMissingAccountName = errors.New("AccountName must be set")
+var ErrGenerateMissingAccountName = errors.New("account name is empty")
 
 // Key represents an TOTP or HTOP key.
 type Key struct {
@@ -146,7 +146,7 @@ func (k *Key) Period() uint64 {
 	if u, err := strconv.ParseUint(q.Get("period"), 10, 64); err == nil {
 		return u
 	}
-	
+
 	// If no period is defined 30 seconds is the default per (rfc6238)
 	return 30
 }
