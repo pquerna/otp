@@ -1,9 +1,6 @@
 package main
 
 import (
-	"github.com/pquerna/otp"
-	"github.com/pquerna/otp/totp"
-
 	"bufio"
 	"bytes"
 	"encoding/base32"
@@ -12,6 +9,9 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/totp"
 )
 
 func display(key *otp.Key, data []byte) {
@@ -34,18 +34,18 @@ func promptForPasscode() string {
 
 // Demo function, not used in main
 // Generates Passcode using a UTF-8 (not base32) secret and custom parameters
-func GeneratePassCode(utf8string string) string{
-        secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
-        passcode, err := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
-                Period:    30,
-                Skew:      1,
-                Digits:    otp.DigitsSix,
-                Algorithm: otp.AlgorithmSHA512,
-        })
-        if err != nil {
-                panic(err)
-        }
-        return passcode
+func GeneratePassCode(utf8string string) string {
+	secret := base32.StdEncoding.EncodeToString([]byte(utf8string))
+	passcode, err := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
+		Period:    30,
+		Skew:      1,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA512,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return passcode
 }
 
 func main() {

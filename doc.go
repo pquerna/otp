@@ -27,10 +27,10 @@
 // Authenticator supports using a QR code as an enrollment method:
 //
 //	import (
-//		"github.com/pquerna/otp/totp"
-//
 //		"bytes"
 //		"image/png"
+//
+//		"github.com/pquerna/otp/totp"
 //	)
 //
 //	key, err := totp.Generate(totp.GenerateOpts{

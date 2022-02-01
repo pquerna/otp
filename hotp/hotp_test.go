@@ -18,12 +18,13 @@
 package hotp
 
 import (
-	"github.com/pquerna/otp"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"encoding/base32"
 	"testing"
+
+	"github.com/pquerna/otp"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type tc struct {
@@ -52,7 +53,6 @@ var (
 
 // Test values from http://tools.ietf.org/html/rfc4226#appendix-D
 func TestValidateRFCMatrix(t *testing.T) {
-
 	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Counter, tx.Secret,
 			ValidateOpts{

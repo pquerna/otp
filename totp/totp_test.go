@@ -18,13 +18,14 @@
 package totp
 
 import (
-	"github.com/pquerna/otp"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"encoding/base32"
 	"testing"
 	"time"
+
+	"github.com/pquerna/otp"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type tc struct {
