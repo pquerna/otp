@@ -150,15 +150,20 @@ func (k *Key) Period() uint64 {
 }
 
 // Digits returns a tiny int representing the number of OTP digits.
-func (k *Key) Digits() uint64 {
+func (k *Key) Digits() Digits {
 	q := k.url.Query()
 
 	if u, err := strconv.ParseUint(q.Get("digits"), 10, 64); err == nil {
-		return u
+		switch u {
+		case 8:
+			return DigitsEight
+		default:
+			return DigitsSix
+		}
 	}
 
 	// Six is the most common value.
-	return 6
+	return DigitsSix
 }
 
 // Algorithm returns the algorithm used or the default (SHA1).

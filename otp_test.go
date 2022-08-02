@@ -31,7 +31,7 @@ func TestKeyAllThere(t *testing.T) {
 	require.Equal(t, "alice@google.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, "JBSWY3DPEHPK3PXP", k.Secret(), "Extracting Secret")
 	require.Equal(t, AlgorithmSHA256, k.Algorithm())
-	require.Equal(t, uint64(8), k.Digits())
+	require.Equal(t, DigitsEight, k.Digits())
 }
 
 func TestKeyIssuerOnlyInPath(t *testing.T) {
