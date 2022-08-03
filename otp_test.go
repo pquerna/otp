@@ -18,18 +18,20 @@
 package otp
 
 import (
-	"github.com/stretchr/testify/require"
-
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestKeyAllThere(t *testing.T) {
-	k, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example`)
+	k, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example&algorithm=sha256&digits=8`)
 	require.NoError(t, err, "failed to parse url")
 	require.Equal(t, "totp", k.Type(), "Extracting Type")
 	require.Equal(t, "Example", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@google.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, "JBSWY3DPEHPK3PXP", k.Secret(), "Extracting Secret")
+	require.Equal(t, AlgorithmSHA256, k.Algorithm())
+	require.Equal(t, DigitsEight, k.Digits())
 }
 
 func TestKeyIssuerOnlyInPath(t *testing.T) {
