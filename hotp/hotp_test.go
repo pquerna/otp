@@ -78,6 +78,19 @@ func TestGenerateRFCMatrix(t *testing.T) {
 	}
 }
 
+func TestGenerateCodeCustom(t *testing.T){
+	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
+
+	code, err := GenerateCodeCustom("foo",1,ValidateOpts{})
+	print(code)
+	require.Equal(t, otp.ErrValidateSecretInvalidBase32, err, "Decoding of secret as base32 failed.")
+	require.Equal(t, "", code, "Code should be empty string when we have an error.")
+
+	code, err = GenerateCodeCustom(secSha1,1,ValidateOpts{})
+	require.Equal(t, 6, len(code), "Code should be 6 digits when we have not an error.")
+	require.NoError(t, err, "Expected no error.")
+}
+
 func TestValidateInvalid(t *testing.T) {
 	secSha1 := base32.StdEncoding.EncodeToString([]byte("12345678901234567890"))
 
@@ -85,7 +98,7 @@ func TestValidateInvalid(t *testing.T) {
 		ValidateOpts{
 			Digits:    otp.DigitsSix,
 			Algorithm: otp.AlgorithmSHA1,
-		})
+	})
 	require.Equal(t, otp.ErrValidateInputInvalidLength, err, "Expected Invalid length error.")
 	require.Equal(t, false, valid, "Valid should be false when we have an error.")
 
