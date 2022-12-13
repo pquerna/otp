@@ -148,17 +148,24 @@ func TestGenerate(t *testing.T) {
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 	})
-	require.NoError(t, err, "generate basic TOTP")
+	require.NoError(t, err, "generate basic HOTP")
 	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "Snake Oil",
+		AccountName: "alice@example.com",
+	})
+	require.NoError(t, err, "issuer with a space in the name")
+	require.Contains(t, k.String(), "issuer=Snake%20Oil")
 
 	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 		SecretSize:  20,
 	})
-	require.NoError(t, err, "generate larger TOTP")
+	require.NoError(t, err, "generate larger HOTP")
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
@@ -178,9 +185,9 @@ func TestGenerate(t *testing.T) {
 	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
-		SecretSize:  17, // anything that is not divisable by 5, really
+		SecretSize:  17, // anything that is not divisible by 5, really
 	})
-	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
+	require.NoError(t, err, "Secret size is valid when length not divisible by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 
 	k, err = Generate(GenerateOpts{
@@ -190,6 +197,6 @@ func TestGenerate(t *testing.T) {
 	})
 	require.NoError(t, err, "Secret generation failed")
 	sec, err := b32NoPadding.DecodeString(k.Secret())
-	require.NoError(t, err, "Secret wa not valid base32")
+	require.NoError(t, err, "Secret was not valid base32")
 	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
 }

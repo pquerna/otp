@@ -19,6 +19,7 @@ package hotp
 
 import (
 	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/internal"
 	"io"
 
 	"crypto/hmac"
@@ -186,7 +187,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		opts.Rand = rand.Reader
 	}
 
-	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
+	// otpauth://hotp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
 
 	v := url.Values{}
 	if len(opts.Secret) != 0 {
@@ -208,7 +209,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		Scheme:   "otpauth",
 		Host:     "hotp",
 		Path:     "/" + opts.Issuer + ":" + opts.AccountName,
-		RawQuery: v.Encode(),
+		RawQuery: internal.EncodeQuery(v),
 	}
 
 	return otp.NewKeyFromURL(u.String())

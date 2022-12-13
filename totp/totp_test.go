@@ -129,6 +129,13 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
+		Issuer:      "Snake Oil",
+		AccountName: "alice@example.com",
+	})
+	require.NoError(t, err, "issuer with a space in the name")
+	require.Contains(t, k.String(), "issuer=Snake%20Oil")
+
+	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 		SecretSize:  20,
@@ -139,9 +146,9 @@ func TestGenerate(t *testing.T) {
 	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
-		SecretSize:  13, // anything that is not divisable by 5, really
+		SecretSize:  13, // anything that is not divisible by 5, really
 	})
-	require.NoError(t, err, "Secret size is valid when length not divisable by 5.")
+	require.NoError(t, err, "Secret size is valid when length not divisible by 5.")
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 
 	k, err = Generate(GenerateOpts{
