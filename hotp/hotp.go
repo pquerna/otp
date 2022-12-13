@@ -186,7 +186,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		opts.Rand = rand.Reader
 	}
 
-	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
+	// otpauth://hotp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
 
 	v := url.Values{}
 	if len(opts.Secret) != 0 {
