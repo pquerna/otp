@@ -154,6 +154,13 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
+		Issuer:      "Snake Oil",
+		AccountName: "alice@example.com",
+	})
+	require.NoError(t, err, "issuer with a space in the name")
+	require.Contains(t, k.String(), "issuer=Snake%20Oil")
+
+	k, err = Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
 		AccountName: "alice@example.com",
 		SecretSize:  20,
