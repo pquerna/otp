@@ -18,10 +18,11 @@
 package totp
 
 import (
+	"io"
+
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/hotp"
 	"github.com/pquerna/otp/internal"
-	"io"
 
 	"crypto/rand"
 	"encoding/base32"
@@ -204,4 +205,18 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	}
 
 	return otp.NewKeyFromURL(u.String())
+}
+
+// Restores a key from a secret opts.Secret must be set
+func Regenerate(opts GenerateOpts) (*otp.Key, error) {
+	if opts.SecretSize == 0 {
+		return nil, otp.ErrRegenerateMissingSecret
+	}
+	var secret []byte
+	_, err := base32.StdEncoding.Decode(secret, opts.Secret)
+	if err != nil {
+		return nil, err
+	}
+	opts.Secret = secret
+	return Generate(opts)
 }

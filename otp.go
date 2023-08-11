@@ -46,6 +46,9 @@ var ErrGenerateMissingIssuer = errors.New("Issuer must be set")
 // When generating a Key, the Account Name must be set.
 var ErrGenerateMissingAccountName = errors.New("AccountName must be set")
 
+// When regenerating a Key, the Secret must be set.
+var ErrRegenerateMissingSecret = errors.New("Secret must be set")
+
 // Key represents an TOTP or HTOP key.
 type Key struct {
 	orig string
@@ -55,8 +58,8 @@ type Key struct {
 // NewKeyFromURL creates a new Key from an TOTP or HOTP url.
 //
 // The URL format is documented here:
-//   https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 //
+//	https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 func NewKeyFromURL(orig string) (*Key, error) {
 	s := strings.TrimSpace(orig)
 
