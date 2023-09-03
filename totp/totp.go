@@ -212,7 +212,7 @@ func Regenerate(opts GenerateOpts) (*otp.Key, error) {
 	if opts.SecretSize == 0 {
 		return nil, otp.ErrRegenerateMissingSecret
 	}
-	var secret []byte
+	secret := make([]byte, base32.StdEncoding.DecodedLen(len(opts.Secret)))
 	_, err := base32.StdEncoding.Decode(secret, opts.Secret)
 	if err != nil {
 		return nil, err
