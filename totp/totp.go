@@ -25,7 +25,6 @@ import (
 
 	"crypto/rand"
 	"encoding/base32"
-	"math"
 	"net/url"
 	"strconv"
 	"time"
@@ -82,7 +81,7 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 	if opts.Period == 0 {
 		opts.Period = 30
 	}
-	counter := uint64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
+	counter := uint64(t.Unix()) / uint64(opts.Period)
 	passcode, err = hotp.GenerateCodeCustom(secret, counter, hotp.ValidateOpts{
 		Digits:    opts.Digits,
 		Algorithm: opts.Algorithm,
@@ -101,12 +100,12 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 	}
 
 	counters := []uint64{}
-	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
+	counter := uint64(t.Unix()) / uint64(opts.Period)
 
 	counters = append(counters, uint64(counter))
-	for i := 1; i <= int(opts.Skew); i++ {
-		counters = append(counters, uint64(counter+int64(i)))
-		counters = append(counters, uint64(counter-int64(i)))
+	for i := uint64(1); i <= uint64(opts.Skew); i++ {
+		counters = append(counters, counter+i)
+		counters = append(counters, counter-i)
 	}
 
 	for _, counter := range counters {
