@@ -18,10 +18,11 @@
 package totp
 
 import (
+	"io"
+
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/hotp"
 	"github.com/pquerna/otp/internal"
-	"io"
 
 	"crypto/rand"
 	"encoding/base32"
@@ -98,6 +99,10 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
 	if opts.Period == 0 {
 		opts.Period = 30
+	}
+
+	if opts.Skew == 0 {
+		opts.Skew = 1
 	}
 
 	counters := []uint64{}
