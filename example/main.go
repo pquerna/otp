@@ -9,7 +9,6 @@ import (
 	"encoding/base32"
 	"fmt"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -19,7 +18,7 @@ func display(key *otp.Key, data []byte) {
 	fmt.Printf("Account Name: %s\n", key.AccountName())
 	fmt.Printf("Secret:       %s\n", key.Secret())
 	fmt.Println("Writing PNG to qr-code.png....")
-	ioutil.WriteFile("qr-code.png", data, 0644)
+	os.WriteFile("qr-code.png", data, 0644)
 	fmt.Println("")
 	fmt.Println("Please add your TOTP to your OTP Application now!")
 	fmt.Println("")
