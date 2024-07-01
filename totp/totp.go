@@ -131,7 +131,7 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 // are compatible with Google-Authenticator.
 type GenerateOpts struct {
 	// Name of the issuing Organization/Company.
-	Issuer string
+	Issuer *string
 	// Name of the User's Account (eg, email address)
 	AccountName string
 	// Number of seconds a TOTP hash is valid for. Defaults to 30 seconds.
@@ -153,8 +153,8 @@ var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 // Generate a new TOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
-	if opts.Issuer == "" {
-		return nil, otp.ErrGenerateMissingIssuer
+	if opts.Issuer != nil && *opts.Issuer == "" {
+		return nil, otp.ErrEmptyIssuer
 	}
 
 	if opts.AccountName == "" {
@@ -191,7 +191,10 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		v.Set("secret", b32NoPadding.EncodeToString(secret))
 	}
 
-	v.Set("issuer", opts.Issuer)
+	if opts.Issuer != nil {
+		v.Set("issuer", *opts.Issuer)
+	}
+
 	v.Set("period", strconv.FormatUint(uint64(opts.Period), 10))
 	v.Set("algorithm", opts.Algorithm.String())
 	v.Set("digits", opts.Digits.String())
@@ -199,8 +202,13 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	u := url.URL{
 		Scheme:   "otpauth",
 		Host:     "totp",
-		Path:     "/" + opts.Issuer + ":" + opts.AccountName,
 		RawQuery: internal.EncodeQuery(v),
+	}
+
+	if opts.Issuer != nil {
+		u.Path = "/" + *opts.Issuer + ":" + opts.AccountName
+	} else {
+		u.Path = "/" + opts.AccountName
 	}
 
 	return otp.NewKeyFromURL(u.String())
