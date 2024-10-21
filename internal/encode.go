@@ -14,11 +14,16 @@ func EncodeQuery(v url.Values) string {
 		return ""
 	}
 	var buf strings.Builder
+
+	// Google Authenticator expects the secret to be first, so handle it separately
 	keys := make([]string, 0, len(v))
+	keys = append(keys, "secret")
 	for k := range v {
-		keys = append(keys, k)
+		if k != "secret" {
+			keys = append(keys, k)
+		}
 	}
-	sort.Strings(keys)
+	sort.Strings(keys[1:])
 	for _, k := range keys {
 		vs := v[k]
 		keyEscaped := url.PathEscape(k) // changed from url.QueryEscape
