@@ -182,6 +182,8 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 
 	// otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
 
+	// the secret must be first in the query to meet Google Authenticator's high standards
+
 	v := url.Values{}
 	if len(opts.Secret) != 0 {
 		v.Set("secret", b32NoPadding.EncodeToString(opts.Secret))

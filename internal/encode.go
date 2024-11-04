@@ -2,7 +2,6 @@ package internal
 
 import (
 	"net/url"
-	"sort"
 	"strings"
 )
 
@@ -10,6 +9,7 @@ import (
 // of + to encode spaces. This is necessary to correctly render spaces in some
 // authenticator apps, like Google Authenticator.
 func EncodeQuery(v url.Values) string {
+	// keep the order of the keys in v because the Google Authenticator expects the secret to be first
 	if v == nil {
 		return ""
 	}
@@ -18,7 +18,6 @@ func EncodeQuery(v url.Values) string {
 	for k := range v {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
 	for _, k := range keys {
 		vs := v[k]
 		keyEscaped := url.PathEscape(k) // changed from url.QueryEscape
