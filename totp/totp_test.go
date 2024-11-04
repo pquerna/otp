@@ -175,3 +175,26 @@ func TestGoogleLowerCaseSecret(t *testing.T) {
 	valid := Validate(code, w.Secret())
 	require.True(t, valid)
 }
+
+func TestSteamSecret(t *testing.T) {
+	w, err := otp.NewKeyFromURL(`otpauth://totp/username%20steam:username?secret=qlt6vmy6svfx4bt4rpmisaiyol6hihca&period=30&digits=5&issuer=username%20steam&encoder=steam`)
+	require.NoError(t, err)
+	require.Equal(t, "qlt6vmy6svfx4bt4rpmisaiyol6hihca", w.Secret())
+	require.Equal(t, otp.EncoderSteam, w.Encoder())
+	require.Equal(t, 5, w.Digits().Length())
+
+	n := time.Now().UTC()
+	opts := ValidateOpts{
+		Period:  uint(w.Period()),
+		Digits:  w.Digits(),
+		Encoder: w.Encoder(),
+	}
+	code, err := GenerateCodeCustom(w.Secret(), n, opts)
+	require.NoError(t, err)
+
+	require.Len(t, code, w.Digits().Length())
+
+	valid, err := ValidateCustom(code, w.Secret(), n, opts)
+	require.NoError(t, err)
+	require.True(t, valid)
+}
