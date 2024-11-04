@@ -189,7 +189,7 @@ var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 func Generate(opts GenerateOpts) (*otp.Key, error) {
 	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
-		return nil, otp.ErrGenerateMissingIssuer
+		return nil, otp.ErrEmptyIssuer
 	}
 
 	if opts.AccountName == "" {

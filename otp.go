@@ -40,8 +40,8 @@ var ErrValidateSecretInvalidBase32 = errors.New("Decoding of secret as base32 fa
 // The user provided passcode length was not expected.
 var ErrValidateInputInvalidLength = errors.New("Input length unexpected")
 
-// When generating a Key, the Issuer must be set.
-var ErrGenerateMissingIssuer = errors.New("Issuer must be set")
+// When generating a Key, the Issuer cannot be empty.
+var ErrEmptyIssuer = errors.New("Issuer cannot be empty")
 
 // When generating a Key, the Account Name must be set.
 var ErrGenerateMissingAccountName = errors.New("AccountName must be set")
@@ -55,8 +55,8 @@ type Key struct {
 // NewKeyFromURL creates a new Key from an TOTP or HOTP url.
 //
 // The URL format is documented here:
-//   https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 //
+//	https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 func NewKeyFromURL(orig string) (*Key, error) {
 	s := strings.TrimSpace(orig)
 
