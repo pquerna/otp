@@ -18,10 +18,12 @@
 package totp
 
 import (
+	"io"
+	"strings"
+
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/hotp"
 	"github.com/pquerna/otp/internal"
-	"io"
 
 	"crypto/rand"
 	"encoding/base32"
@@ -207,4 +209,30 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	}
 
 	return otp.NewKeyFromURL(u.String())
+}
+
+// FixGAuthBug appends an extra parameter delimiter "&" to the URI if necessary.
+//
+// This function provides a workaround for a known bug in Google Authenticator.
+// (See issue #94: https://github.com/pquerna/otp/issues/94#issuecomment-2524954588)
+//
+// The bug affects QR codes generated with certain combinations of standards
+// and parameters, causing them to fail when scanned by Google Authenticator.
+//
+// Use this function if you need to generate a QR code using an external tool
+// (outside this library) and require the URI to be compatible with Google Authenticator.
+// It adjusts the URI to ensure proper functionality.
+func FixGAuthBug(uri string) (string, error) {
+	parsedURL, err := url.Parse(uri)
+	if err != nil {
+		return "", err
+	}
+
+	chunks := strings.Split(parsedURL.RawQuery, "&")
+
+	if !strings.HasPrefix(chunks[len(chunks)-1], "secret=") {
+		return uri, nil // last param is not a secret
+	}
+
+	return uri + "&", nil // avoid GoogleAuthenticator bug
 }
