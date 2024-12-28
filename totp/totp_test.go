@@ -206,6 +206,16 @@ func TestFixGAuthBug_fix94(t *testing.T) {
 		uriExpect string
 	}{
 		{
+			title:     "no query (require be as is)",
+			uriInput:  "otpauth://totp/example.com:test_head@example.com",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com",
+		},
+		{
+			title:     "empty query (require be as is)",
+			uriInput:  "otpauth://totp/example.com:test_head@example.com?",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com?",
+		},
+		{
 			title:     "secret only (minimum info)",
 			uriInput:  "otpauth://totp/example.com:test_head@example.com?secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X",
 			uriExpect: "otpauth://totp/example.com:test_head@example.com?secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&",
