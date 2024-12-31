@@ -187,7 +187,7 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 		v.Set("secret", b32NoPadding.EncodeToString(opts.Secret))
 	} else {
 		secret := make([]byte, opts.SecretSize)
-		_, err := opts.Rand.Read(secret)
+		_, err := io.ReadFull(opts.Rand, secret)
 		if err != nil {
 			return nil, err
 		}
