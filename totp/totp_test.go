@@ -19,6 +19,7 @@ package totp
 
 import (
 	"github.com/pquerna/otp"
+	"github.com/pquerna/otp/internal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -61,14 +62,14 @@ var (
 	}
 )
 
-//
 // Test vectors from http://tools.ietf.org/html/rfc6238#appendix-B
 // NOTE -- the test vectors are documented as having the SAME
 // secret -- this is WRONG -- they have a variable secret
 // depending upon the hmac algorithm:
-// 		http://www.rfc-editor.org/errata_search.php?rfc=6238
-// this only took a few hours of head/desk interaction to figure out.
 //
+//	http://www.rfc-editor.org/errata_search.php?rfc=6238
+//
+// this only took a few hours of head/desk interaction to figure out.
 func TestValidateRFCMatrix(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
@@ -120,7 +121,7 @@ func TestValidateSkew(t *testing.T) {
 
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
-		Issuer:      "SnakeOil",
+		Issuer:      internal.Ptr("SnakeOil"),
 		AccountName: "alice@example.com",
 	})
 	require.NoError(t, err, "generate basic TOTP")
@@ -129,14 +130,14 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
-		Issuer:      "Snake Oil",
+		Issuer:      internal.Ptr("Snake Oil"),
 		AccountName: "alice@example.com",
 	})
 	require.NoError(t, err, "issuer with a space in the name")
 	require.Contains(t, k.String(), "issuer=Snake%20Oil")
 
 	k, err = Generate(GenerateOpts{
-		Issuer:      "SnakeOil",
+		Issuer:      internal.Ptr("SnakeOil"),
 		AccountName: "alice@example.com",
 		SecretSize:  20,
 	})
@@ -144,7 +145,7 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, 32, len(k.Secret()), "Secret is 32 bytes long as base32.")
 
 	k, err = Generate(GenerateOpts{
-		Issuer:      "SnakeOil",
+		Issuer:      internal.Ptr("SnakeOil"),
 		AccountName: "alice@example.com",
 		SecretSize:  13, // anything that is not divisible by 5, really
 	})
@@ -152,7 +153,7 @@ func TestGenerate(t *testing.T) {
 	require.NotContains(t, k.Secret(), "=", "Secret has no escaped characters.")
 
 	k, err = Generate(GenerateOpts{
-		Issuer:      "SnakeOil",
+		Issuer:      internal.Ptr("SnakeOil"),
 		AccountName: "alice@example.com",
 		Secret:      []byte("helloworld"),
 	})
