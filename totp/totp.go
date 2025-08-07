@@ -109,7 +109,9 @@ func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOp
 	counters = append(counters, uint64(counter))
 	for i := 1; i <= int(opts.Skew); i++ {
 		counters = append(counters, uint64(counter+int64(i)))
-		counters = append(counters, uint64(counter-int64(i)))
+		if counter >= int64(i) {
+			counters = append(counters, uint64(counter-int64(i)))
+		}
 	}
 
 	for _, counter := range counters {
