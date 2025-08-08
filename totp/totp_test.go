@@ -61,14 +61,14 @@ var (
 	}
 )
 
-//
 // Test vectors from http://tools.ietf.org/html/rfc6238#appendix-B
 // NOTE -- the test vectors are documented as having the SAME
 // secret -- this is WRONG -- they have a variable secret
 // depending upon the hmac algorithm:
-// 		http://www.rfc-editor.org/errata_search.php?rfc=6238
-// this only took a few hours of head/desk interaction to figure out.
 //
+//	http://www.rfc-editor.org/errata_search.php?rfc=6238
+//
+// this only took a few hours of head/desk interaction to figure out.
 func TestValidateRFCMatrix(t *testing.T) {
 	for _, tx := range rfcMatrixTCs {
 		valid, err := ValidateCustom(tx.TOTP, tx.Secret, time.Unix(tx.TS, 0).UTC(),
@@ -197,4 +197,83 @@ func TestSteamSecret(t *testing.T) {
 	valid, err := ValidateCustom(code, w.Secret(), n, opts)
 	require.NoError(t, err)
 	require.True(t, valid)
+}
+
+func TestFixGAuthBug_fix94(t *testing.T) {
+	for index, test := range []struct {
+		title     string
+		uriInput  string
+		uriExpect string
+	}{
+		{
+			title:     "no query (require be as is)",
+			uriInput:  "otpauth://totp/example.com:test_head@example.com",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com",
+		},
+		{
+			title:     "empty query (require be as is)",
+			uriInput:  "otpauth://totp/example.com:test_head@example.com?",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com?",
+		},
+		{
+			title:     "secret only (minimum info)",
+			uriInput:  "otpauth://totp/example.com:test_head@example.com?secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com?secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&",
+		},
+		{
+			title: "heading secret",
+			uriInput: "otpauth://totp/example.com:test_head@example.com?" +
+				"secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&algorithm=SHA256&digits=8&issuer=example.com&period=45",
+			uriExpect: "otpauth://totp/example.com:test_head@example.com?" +
+				"secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&algorithm=SHA256&digits=8&issuer=example.com&period=45",
+		},
+		{
+			title: "middle secret",
+			uriInput: "otpauth://totp/example.com:test_middle@example.com?" +
+				"algorithm=SHA256&digits=8&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&issuer=example.com&period=45",
+			uriExpect: "otpauth://totp/example.com:test_middle@example.com?" +
+				"algorithm=SHA256&digits=8&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&issuer=example.com&period=45",
+		},
+		{
+			title: "tailing secret (require '&' to be added)",
+			uriInput: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X",
+			uriExpect: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&",
+		},
+		{
+			title: "tailing secret (fixed w/& only)",
+			uriInput: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&",
+			uriExpect: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&",
+		},
+		{
+			title: "tailing secret (fixed w/single param)",
+			uriInput: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&foo",
+			uriExpect: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&foo",
+		},
+		{
+			title: "tailing secret (fixed w/key-value param)",
+			uriInput: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&foo=bar",
+			uriExpect: "otpauth://totp/example.com:test_tail@example.com?" +
+				"algorithm=SHA256&digits=8&issuer=example.com&period=45&secret=DEOXGYTNWD3D6J3RNBEGCI2R45X3XO3X&foo=bar",
+		},
+	} {
+		expect := test.uriExpect
+		actual, err := FixGAuthBug(test.uriInput) // Apply bug fix
+
+		require.NoError(t, err, "test case #%d: %s", index+1, test.title)
+		require.Equal(t, expect, actual, "test case #%d: %s (failed)", index+1, test.title)
+	}
+
+	t.Run("malformed uri (contains CTL byte)", func(t *testing.T) {
+		out, err := FixGAuthBug("otpauth://totp/example.com:test_tail@example.com?\n")
+
+		require.Error(t, err, "malformed uri should return error")
+		require.Empty(t, out, "returned value should be empty on error")
+	})
 }

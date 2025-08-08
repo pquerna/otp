@@ -44,12 +44,41 @@ For an example of a working enrollment work flow, [GitHub has documented theirs]
 1. Retrieve the User's TOTP Secret from your backend.
 1. Validate the user's passcode. `totp.Validate(...)`
 
-
 ### Recovery Codes
 
 When a user loses access to their TOTP device, they would no longer have access to their account.  Because TOTPs are often configured on mobile devices that can be lost, stolen or damaged, this is a common problem. For this reason many providers give their users "backup codes" or "recovery codes".  These are a set of one time use codes that can be used instead of the TOTP.  These can simply be randomly generated strings that you store in your backend.  [Github's documentation provides an overview of the user experience](
 https://help.github.com/articles/downloading-your-two-factor-authentication-recovery-codes/).
 
+### Google Authenticator Bugfix
+
+There is a [known bug](https://github.com/pquerna/otp/issues/94) in Google Authenticator that causes QR code scanning to fail, due to the combination of standards and parameters used to generate the QR code image.
+
+This library provides a workaround function `FixGAuthBug` that appends an extra parameter delimiter "&" to the URI if necessary.
+
+If you plan to use external tools (e.g. "qrencode") to generate QR codes, use this function to ensure compatibility with Google Authenticator.
+
+```go
+func main() {
+  key, err := totp.Generate(totp.GenerateOpts{
+    Issuer:      "localhost:8000",
+    AccountName: "test@example.com",
+  })
+  if err != nil {
+    panic(err)
+  }
+
+  // Generate a URI for the key.
+  uri := key.URL()
+
+  // Ensure the URI be compatible with Google Authenticator.
+  uri, err = totp.FixGAuthBug(uri)
+  if err != nil {
+    panic(err)
+  }
+
+  fmt.Println("Use this URI to generate the QR code:", uri)
+}
+```
 
 ## Improvements, bugs, adding feature, etc:
 
