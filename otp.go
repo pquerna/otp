@@ -191,6 +191,13 @@ func (k *Key) Encoder() Encoder {
 	}
 }
 
+// ImageURL returns an optional image URL for this Key.
+// See https://github.com/freeotp/freeotp-android/blob/master/URI.md#image
+func (k *Key) ImageURL() string {
+	q := k.url.Query()
+	return q.Get("image")
+}
+
 // URL returns the OTP URL as a string
 func (k *Key) URL() string {
 	return k.url.String()

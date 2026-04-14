@@ -48,6 +48,18 @@ func TestKeyNoIssuer(t *testing.T) {
 	require.Equal(t, "alice@google.com", k.AccountName(), "Extracting Account Name")
 }
 
+func TestKeyImageURL(t *testing.T) {
+	k, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example&image=https%3A%2F%2Fexample.com%2Ficon.png%3Fsize%3D200`)
+	require.NoError(t, err)
+	require.Equal(t, "https://example.com/icon.png?size=200", k.ImageURL())
+}
+
+func TestKeyImageURLMissing(t *testing.T) {
+	k, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example`)
+	require.NoError(t, err)
+	require.Equal(t, "", k.ImageURL())
+}
+
 func TestKeyWithNewLine(t *testing.T) {
 	w, err := NewKeyFromURL(`otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP
 `)

@@ -179,6 +179,8 @@ type GenerateOpts struct {
 	Digits otp.Digits
 	// Algorithm to use for HMAC. Defaults to SHA1.
 	Algorithm otp.Algorithm
+	// Optional image to display next to the code in supported authenticators.
+	ImageURL string
 	// Reader to use for generating HOTP Key.
 	Rand io.Reader
 }
@@ -225,6 +227,10 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 	v.Set("issuer", opts.Issuer)
 	v.Set("algorithm", opts.Algorithm.String())
 	v.Set("digits", opts.Digits.String())
+
+	if opts.ImageURL != "" {
+		v.Set("image", opts.ImageURL)
+	}
 
 	u := url.URL{
 		Scheme:   "otpauth",

@@ -152,6 +152,7 @@ func TestGenerate(t *testing.T) {
 	require.Equal(t, "SnakeOil", k.Issuer(), "Extracting Issuer")
 	require.Equal(t, "alice@example.com", k.AccountName(), "Extracting Account Name")
 	require.Equal(t, 16, len(k.Secret()), "Secret is 16 bytes long as base32.")
+	require.NotContains(t, k.String(), "image=")
 
 	k, err = Generate(GenerateOpts{
 		Issuer:      "Snake Oil",
@@ -199,4 +200,13 @@ func TestGenerate(t *testing.T) {
 	sec, err := b32NoPadding.DecodeString(k.Secret())
 	require.NoError(t, err, "Secret was not valid base32")
 	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
+
+	k, err = Generate(GenerateOpts{
+		Issuer:      "SnakeOil",
+		AccountName: "alice@example.com",
+		ImageURL:    "https://example.com/icon.png?size=200",
+	})
+	require.NoError(t, err, "generate HOTP with image")
+	require.Equal(t, "https://example.com/icon.png?size=200", k.ImageURL())
+	require.Contains(t, k.String(), "image=https:%2F%2Fexample.com%2Ficon.png%3Fsize=200")
 }
