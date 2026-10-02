@@ -38,7 +38,7 @@ func Validate(passcode string, secret string) bool {
 	rv, _ := ValidateCustom(
 		passcode,
 		secret,
-		time.Now().UTC(),
+		time.Now(),
 		ValidateOpts{
 			Period:    30,
 			Skew:      1,
