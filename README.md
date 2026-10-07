@@ -30,6 +30,41 @@ For an example of a working enrollment work flow, [GitHub has documented theirs]
 1. Store TOTP Secret for the User in your backend. `key.Secret()`
 1. Provide the user with "recovery codes". (See Recovery Codes bellow)
 
+### Restoring a Key
+
+To display a user's QR code again, store `key.URL()` during enrollment and restore it with `otp.NewKeyFromURL`:
+
+```go
+key, err := otp.NewKeyFromURL(storedURL)
+if err != nil {
+	panic(err)
+}
+```
+
+The restored key retains the secret, issuer, account name, period, digits, and algorithm. Use `key.Image(...)` to generate its QR code.
+
+If you stored only `key.Secret()`, decode it before passing it to `totp.Generate`. `key.Secret()` returns a Base32-encoded string, while `GenerateOpts.Secret` expects the raw bytes. Passing `[]byte(storedSecret)` encodes the string again and produces a different secret.
+
+```go
+secret, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(strings.ToUpper(storedSecret))
+if err != nil {
+	panic(err)
+}
+key, err := totp.Generate(totp.GenerateOpts{
+	Issuer:      issuer,
+	AccountName: accountName,
+	Secret:      secret,
+	Period:      period,
+	Digits:      digits,
+	Algorithm:   algorithm,
+})
+if err != nil {
+	panic(err)
+}
+```
+
+Use the same issuer, account name, period, digits, and algorithm as during enrollment; these are not included in the secret. Import `encoding/base32` and `strings` for the decoding step. Neither restoration method generates a new secret.
+
 ### Code Generation
 
 * In either TOTP or HOTP cases, use the `GenerateCode` function and a counter or
