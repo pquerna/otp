@@ -184,7 +184,13 @@ func Generate(opts GenerateOpts) (*otp.Key, error) {
 
 	v := url.Values{}
 	if len(opts.Secret) != 0 {
-		v.Set("secret", b32NoPadding.EncodeToString(opts.Secret))
+		// Check if the secret is already base32-encoded (e.g., loaded from database)
+		// by attempting to decode it. If decoding succeeds, use it directly.
+		if decoded, err := b32NoPadding.DecodeString(string(opts.Secret)); err == nil && len(decoded) > 0 {
+			v.Set("secret", string(opts.Secret))
+		} else {
+			v.Set("secret", b32NoPadding.EncodeToString(opts.Secret))
+		}
 	} else {
 		secret := make([]byte, opts.SecretSize)
 		_, err := io.ReadFull(opts.Rand, secret)
