@@ -31,6 +31,7 @@ import (
 	"math"
 	"net/url"
 	"strings"
+	"unicode"
 )
 
 const debug = false
@@ -147,7 +148,12 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 // ValidateCustom validates an HOTP with customizable options. Most users should
 // use Validate().
 func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
-	passcode = strings.TrimSpace(passcode)
+	passcode = strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, passcode)
 
 	if len(passcode) != opts.Digits.Length() {
 		return false, otp.ErrValidateInputInvalidLength

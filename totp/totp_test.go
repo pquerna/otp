@@ -118,6 +118,57 @@ func TestValidateSkew(t *testing.T) {
 	}
 }
 
+func TestValidateWhitespace(t *testing.T) {
+	sec := "JBSWY3DPEHPK3PXP"
+	now := time.Now().UTC()
+	code, err := GenerateCode(sec, now)
+	require.NoError(t, err)
+	require.Len(t, code, 6)
+
+	// Middle space: e.g. "123 456"
+	codeMiddleSpace := code[:3] + " " + code[3:]
+	require.True(t, Validate(codeMiddleSpace, sec), "passcode with middle space should validate")
+
+	// Arbitrary spaces: e.g. "  12 34 56  "
+	codeGroupedSpaces := "  " + code[:2] + " " + code[2:4] + " " + code[4:] + "  "
+	require.True(t, Validate(codeGroupedSpaces, sec), "passcode with leading, trailing, and interior spaces should validate")
+
+	// Single digit spaces: " 1 2 3 4 5 6 "
+	codeAllSpaces := " " + string(code[0]) + " " + string(code[1]) + " " + string(code[2]) + " " + string(code[3]) + " " + string(code[4]) + " " + string(code[5]) + " "
+	require.True(t, Validate(codeAllSpaces, sec), "passcode with arbitrary spaces should validate")
+
+	// Tabs, newlines, and unicode non-breaking space
+	codeUnicodeWhitespace := "\t" + code[:3] + "\u00a0" + code[3:] + "\n"
+	require.True(t, Validate(codeUnicodeWhitespace, sec), "passcode with unicode whitespace should validate")
+
+	opts := ValidateOpts{
+		Period:    30,
+		Skew:      1,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	}
+
+	validCustom, err := ValidateCustom(codeMiddleSpace, sec, now, opts)
+	require.NoError(t, err)
+	require.True(t, validCustom)
+
+	// Wrong passcode with arbitrary spaces should fail cleanly
+	wrongCode := "000000"
+	if code == wrongCode {
+		wrongCode = "111111"
+	}
+	require.False(t, Validate("  "+wrongCode[:2]+" "+wrongCode[2:4]+" "+wrongCode[4:]+"  ", sec))
+
+	// Invalid length after stripping whitespace
+	validCustom, err = ValidateCustom("  12 34 5  ", sec, now, opts)
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err)
+	require.False(t, validCustom)
+
+	validCustom, err = ValidateCustom("     ", sec, now, opts)
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err)
+	require.False(t, validCustom)
+}
+
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",
