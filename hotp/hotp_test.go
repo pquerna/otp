@@ -143,6 +143,49 @@ func TestValidateLowerCaseSecret(t *testing.T) {
 	require.Equal(t, true, valid, "Valid should be true.")
 }
 
+func TestValidateWhitespace(t *testing.T) {
+	// From rfcMatrixTCs: counter 0 produces "755224"
+	valid := Validate("755 224", 0, secSha1)
+	require.True(t, valid, "passcode with middle space should validate")
+
+	valid = Validate("  75 52 24  ", 0, secSha1)
+	require.True(t, valid, "passcode with leading, trailing, and interior spaces should validate")
+
+	valid = Validate(" 7 5 5 2 2 4 ", 0, secSha1)
+	require.True(t, valid, "passcode with arbitrary spaces should validate")
+
+	valid = Validate("755\t224\n", 0, secSha1)
+	require.True(t, valid, "passcode with tabs and newlines should validate")
+
+	valid = Validate("755\u00a0224", 0, secSha1)
+	require.True(t, valid, "passcode with unicode non-breaking space should validate")
+
+	valid = Validate("  12 34 56  ", 0, secSha1)
+	require.False(t, valid, "wrong passcode with arbitrary spaces should fail cleanly")
+
+	validCustom, err := ValidateCustom("  75 52 24  ", 0, secSha1, ValidateOpts{
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
+	require.NoError(t, err)
+	require.True(t, validCustom)
+
+	// Invalid length after stripping whitespace
+	validCustom, err = ValidateCustom(" 75 52 ", 0, secSha1, ValidateOpts{
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err)
+	require.False(t, validCustom)
+
+	validCustom, err = ValidateCustom("   ", 0, secSha1, ValidateOpts{
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmSHA1,
+	})
+	require.Equal(t, otp.ErrValidateInputInvalidLength, err)
+	require.False(t, validCustom)
+}
+
 func TestGenerate(t *testing.T) {
 	k, err := Generate(GenerateOpts{
 		Issuer:      "SnakeOil",

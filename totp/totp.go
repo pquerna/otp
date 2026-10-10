@@ -28,7 +28,9 @@ import (
 	"math"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
 // Validate a TOTP using the current time.
@@ -99,6 +101,13 @@ func GenerateCodeCustom(secret string, t time.Time, opts ValidateOpts) (passcode
 // ValidateCustom validates a TOTP given a user specified time and custom options.
 // Most users should use Validate() to provide an interpolatable TOTP experience.
 func ValidateCustom(passcode string, secret string, t time.Time, opts ValidateOpts) (bool, error) {
+	passcode = strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, passcode)
+
 	if opts.Period == 0 {
 		opts.Period = 30
 	}
