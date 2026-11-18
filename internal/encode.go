@@ -21,14 +21,14 @@ func EncodeQuery(v url.Values) string {
 	sort.Strings(keys)
 	for _, k := range keys {
 		vs := v[k]
-		keyEscaped := url.PathEscape(k) // changed from url.QueryEscape
+		keyEscaped := strings.ReplaceAll(url.QueryEscape(k), "+", "%20")
 		for _, v := range vs {
 			if buf.Len() > 0 {
 				buf.WriteByte('&')
 			}
 			buf.WriteString(keyEscaped)
 			buf.WriteByte('=')
-			buf.WriteString(url.PathEscape(v)) // changed from url.QueryEscape
+			buf.WriteString(strings.ReplaceAll(url.QueryEscape(v), "+", "%20"))
 		}
 	}
 	return buf.String()
