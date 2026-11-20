@@ -200,3 +200,21 @@ func TestGenerate(t *testing.T) {
 	require.NoError(t, err, "Secret was not valid base32")
 	require.Equal(t, sec, []byte("helloworld"), "Specified Secret was not kept")
 }
+
+func TestGenerateCodeCustom_MD5(t *testing.T) {
+	for counter := uint64(0); counter < 64; counter++ {
+		code, err := GenerateCodeCustom("JBSWY3DPEHPK3PXP", counter, ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmMD5,
+		})
+		require.NoError(t, err)
+		require.Equal(t, 6, len(code))
+
+		valid, err := ValidateCustom(code, counter, "JBSWY3DPEHPK3PXP", ValidateOpts{
+			Digits:    otp.DigitsSix,
+			Algorithm: otp.AlgorithmMD5,
+		})
+		require.NoError(t, err)
+		require.True(t, valid)
+	}
+}

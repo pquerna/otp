@@ -105,9 +105,16 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 	mac.Write(buf)
 	sum := mac.Sum(nil)
 
+	if len(sum) < 4 {
+		return "", fmt.Errorf("digest length too short: %d", len(sum))
+	}
+
 	// "Dynamic truncation" in RFC 4226
 	// http://tools.ietf.org/html/rfc4226#section-5.4
-	offset := sum[len(sum)-1] & 0xf
+	offset := int(sum[len(sum)-1] & 0xf)
+	if offset+4 > len(sum) {
+		offset = len(sum) - 4
+	}
 	value := int64(((int(sum[offset]) & 0x7f) << 24) |
 		((int(sum[offset+1] & 0xff)) << 16) |
 		((int(sum[offset+2] & 0xff)) << 8) |
