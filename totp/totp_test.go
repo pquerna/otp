@@ -198,3 +198,21 @@ func TestSteamSecret(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, valid)
 }
+
+func TestTOTP_MD5(t *testing.T) {
+	opts := ValidateOpts{
+		Period:    30,
+		Digits:    otp.DigitsSix,
+		Algorithm: otp.AlgorithmMD5,
+	}
+	for i := 0; i < 64; i++ {
+		tm := time.Unix(int64(i*30), 0).UTC()
+		code, err := GenerateCodeCustom("JBSWY3DPEHPK3PXP", tm, opts)
+		require.NoError(t, err)
+		require.Equal(t, 6, len(code))
+
+		valid, err := ValidateCustom(code, "JBSWY3DPEHPK3PXP", tm, opts)
+		require.NoError(t, err)
+		require.True(t, valid)
+	}
+}
